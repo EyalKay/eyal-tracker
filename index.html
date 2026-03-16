@@ -140,6 +140,32 @@ canvas{width:100%!important}
 /* LOADING */
 .loader{text-align:center;padding:40px;color:var(--muted);font-size:14px}
 
+/* INFO */
+.info-toggle{width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;transition:all .15s}
+.info-toggle:active{transform:scale(.98)}
+.info-toggle .arrow{transition:transform .2s}
+.info-toggle.open .arrow{transform:rotate(180deg)}
+.info-panel{display:none;margin-bottom:12px}
+.info-panel.open{display:block}
+.info-section{margin-bottom:14px}
+.info-section:last-child{margin-bottom:0}
+.info-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.info-table{width:100%;border-collapse:collapse}
+.info-table td{padding:5px 8px;font-size:12px;border-bottom:1px solid var(--border)}
+.info-table tr:last-child td{border-bottom:none}
+.info-table .food{color:var(--text)}
+.info-table .amount{color:var(--muted);text-align:right;white-space:nowrap}
+.info-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+.info-sum-tile{background:var(--card2);border-radius:8px;padding:8px;text-align:center}
+.info-sum-tile .val{font-size:18px;font-weight:900;line-height:1}
+.info-sum-tile .lbl{font-size:9px;color:var(--muted);margin-top:3px}
+.meal-plan{margin-top:8px}
+.meal-row{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+.meal-row:last-child{border-bottom:none}
+.meal-num{color:var(--muted);font-weight:700;min-width:18px}
+.meal-desc{flex:1;color:var(--text)}
+.meal-cal{color:var(--muted);white-space:nowrap}
+
 /* RESET */
 .danger-card{border-color:var(--muted2)}
 .reset-btn{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;transition:all .15s}
@@ -255,6 +281,67 @@ canvas{width:100%!important}
   <div class="card">
     <div class="card-title">📝 Daily Note</div>
     <textarea class="note-input" id="noteInput" placeholder="How was today? Any slips?" oninput="saveNote()"></textarea>
+  </div>
+
+  <!-- INFO -->
+  <button class="info-toggle" id="infoToggle" onclick="toggleInfo()">
+    <span>📖 Portion Guide & Meal Plan</span>
+    <span class="arrow">▼</span>
+  </button>
+  <div class="info-panel" id="infoPanel">
+    <div class="card">
+      <div class="info-section">
+        <div class="info-section-title" style="color:var(--p)">🥩 Protein — 1 portion = ~220 cal</div>
+        <table class="info-table">
+          <tr><td class="food">Chicken breast / thigh</td><td class="amount">200g</td></tr>
+          <tr><td class="food">Tuna (canned)</td><td class="amount">1 can (160g)</td></tr>
+          <tr><td class="food">Cottage cheese (5%)</td><td class="amount">250g</td></tr>
+          <tr><td class="food">Eggs</td><td class="amount">3 whole</td></tr>
+          <tr><td class="food">Protein powder</td><td class="amount">1 scoop (30g)</td></tr>
+          <tr><td class="food">Greek yogurt</td><td class="amount">200g</td></tr>
+        </table>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title" style="color:var(--c)">🍚 Carbs — 1 portion = ~190 cal</div>
+        <table class="info-table">
+          <tr><td class="food">Rice (cooked)</td><td class="amount">1 cup (200g)</td></tr>
+          <tr><td class="food">Bread</td><td class="amount">2 slices</td></tr>
+          <tr><td class="food">Oatmeal (dry)</td><td class="amount">60g</td></tr>
+          <tr><td class="food">Potato / sweet potato</td><td class="amount">200g</td></tr>
+          <tr><td class="food">Fruit</td><td class="amount">2 medium</td></tr>
+        </table>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title" style="color:var(--f)">🥑 Fat — 1 portion = ~145 cal</div>
+        <table class="info-table">
+          <tr><td class="food">Tahini</td><td class="amount">1.5 tbsp</td></tr>
+          <tr><td class="food">Olive oil</td><td class="amount">1 tbsp</td></tr>
+          <tr><td class="food">Almonds / nuts</td><td class="amount">20g (~15 almonds)</td></tr>
+          <tr><td class="food">Avocado</td><td class="amount">½ medium</td></tr>
+          <tr><td class="food">Peanut butter</td><td class="amount">1.5 tbsp</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="info-section">
+        <div class="info-section-title">🍽️ Daily Meal Plan</div>
+        <div class="info-summary">
+          <div class="info-sum-tile"><div class="val" style="color:var(--p)">5</div><div class="lbl">Protein</div></div>
+          <div class="info-sum-tile"><div class="val" style="color:var(--c)">3</div><div class="lbl">Carbs</div></div>
+          <div class="info-sum-tile"><div class="val" style="color:var(--f)">2</div><div class="lbl">Fat</div></div>
+        </div>
+        <div class="meal-plan">
+          <div class="meal-row"><span class="meal-num">1</span><span class="meal-desc">Protein + Carb + Fat (shake/cottage/tuna + bread/oats + almonds/tahini)</span><span class="meal-cal">~490</span></div>
+          <div class="meal-row"><span class="meal-num">2</span><span class="meal-desc">Chicken/tuna + Rice/potato + Oil/tahini</span><span class="meal-cal">~490</span></div>
+          <div class="meal-row"><span class="meal-num">3</span><span class="meal-desc">2× Protein (eggs+cottage / tuna+eggs) + ½ Carb</span><span class="meal-cal">~640</span></div>
+          <div class="meal-row"><span class="meal-num">4</span><span class="meal-desc">Protein shake + Fruit/oats</span><span class="meal-cal">~410</span></div>
+        </div>
+        <div style="text-align:center;margin-top:10px;font-size:13px;font-weight:700;color:var(--text)">Total: ~1,960 cal/day</div>
+      </div>
+    </div>
   </div>
 
   <!-- RESET -->
@@ -585,6 +672,11 @@ window.saveGoal = function(){
   goalWeight = parseFloat(document.getElementById('goalInput').value)||null;
   saveConfig();
   renderGoal();
+};
+
+window.toggleInfo = function(){
+  document.getElementById('infoToggle').classList.toggle('open');
+  document.getElementById('infoPanel').classList.toggle('open');
 };
 
 window.resetToday = async function(){
