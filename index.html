@@ -84,10 +84,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .habit-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .habit-row:last-child{margin-bottom:0}
 .habit-emoji{font-size:20px;width:28px;text-align:center}
-.habit-label{flex:1;font-size:13px}
-.intensity-btns{display:flex;gap:3px}
-.int-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
-.int-btn.active{color:#000;font-weight:900}
+.habit-info{flex:1}
+.habit-label{font-size:13px}
+.habit-goal{font-size:10px;color:var(--muted)}
+.habit-input-wrap{display:flex;align-items:center;gap:6px}
+.habit-val{background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:16px;font-weight:700;width:65px;padding:6px;text-align:center}
+.habit-val:focus{outline:none;border-color:var(--c)}
+.habit-check{font-size:14px}
+.habit-del{background:none;border:none;color:var(--muted2);font-size:14px;cursor:pointer;padding:2px 4px}
+.habit-del:active{color:var(--red)}
 .habit-add{display:flex;gap:8px;margin-top:10px}
 .habit-add input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:8px 12px}
 .habit-add input:focus{outline:none;border-color:var(--c)}
@@ -272,7 +277,8 @@ canvas{width:100%!important}
     <div class="card-title">🎯 Habits</div>
     <div id="habitsList"></div>
     <div class="habit-add">
-      <input type="text" id="newHabitInput" placeholder="Add habit + emoji...">
+      <input type="text" id="newHabitName" placeholder="Habit name + emoji...">
+      <input type="number" id="newHabitGoal" placeholder="Goal" style="width:70px;text-align:center">
       <button class="add-btn" onclick="addHabit()">+ Add</button>
     </div>
   </div>
@@ -587,26 +593,40 @@ function renderToday(){
 }
 
 // ── HABITS RENDER ──
+const DEFAULT_HABITS = [
+  {id:'steps',emoji:'🚶',name:'Daily Steps',goal:8000,unit:'steps',type:'daily'},
+  {id:'workouts',emoji:'🏋️',name:'Workouts',goal:3,unit:'/week',type:'weekly'}
+];
+
+function getAllHabits(){
+  return [...DEFAULT_HABITS, ...customHabits];
+}
+
 function renderHabits(){
-  const defaultH = [{id:'strength',emoji:'🏋️',name:'Strength Training'},{id:'walk',emoji:'🚶',name:'Walk / Run'}];
-  const all = [...defaultH, ...customHabits];
+  const all = getAllHabits();
   const vals = todayData.habits||{};
 
   let html = '';
   all.forEach(h=>{
     const v = vals[h.id]||0;
-    let btns='';
-    for(let i=1;i<=5;i++){
-      const colors=['#333','#ffa552','#ffa552','#b5e853','#b5e853','#b5e853'];
-      const active = v>=i;
-      btns+=`<button class="int-btn ${active?'active':''}"
-        style="${active?`background:${colors[i]};border-color:${colors[i]}`:''}"
-        onclick="setHabit('${h.id}',${i})">${i}</button>`;
-    }
+    const goal = h.goal||0;
+    const pct = goal>0?Math.min(v/goal*100,100):0;
+    const met = goal>0 && v>=goal;
+    const isCustom = !DEFAULT_HABITS.find(d=>d.id===h.id);
+    const check = met?'<span class="habit-check" style="color:var(--p)">✅</span>':'<span class="habit-check" style="color:var(--muted)">—</span>';
+    const delBtn = isCustom?`<button class="habit-del" onclick="removeHabit('${h.id}')">✕</button>`:'';
     html+=`<div class="habit-row">
       <div class="habit-emoji">${h.emoji}</div>
-      <div class="habit-label">${h.name}</div>
-      <div class="intensity-btns">${btns}</div>
+      <div class="habit-info">
+        <div class="habit-label">${h.name}</div>
+        <div class="habit-goal">Goal: ${goal.toLocaleString()} ${h.unit||''}</div>
+      </div>
+      <div class="habit-input-wrap">
+        <input class="habit-val" type="number" value="${v||''}" placeholder="0"
+          oninput="setHabit('${h.id}',this.value)">
+        ${check}
+        ${delBtn}
+      </div>
     </div>`;
   });
   document.getElementById('habitsList').innerHTML = html;
@@ -636,9 +656,22 @@ window.setTrig = function(t, val){
 
 window.setHabit = function(id, val){
   if(!todayData.habits) todayData.habits={};
-  todayData.habits[id] = todayData.habits[id]===val?0:val;
-  renderHabits();
+  const n = parseFloat(val)||0;
+  todayData.habits[id] = n;
   saveToday();
+  // update check without full re-render (avoids losing focus)
+  const all = getAllHabits();
+  const h = all.find(x=>x.id===id);
+  if(h&&h.goal>0){
+    const row = document.querySelector(`input[oninput*="'${id}'"]`);
+    if(row){
+      const check = row.parentElement.querySelector('.habit-check');
+      if(check){
+        check.style.color = n>=h.goal?'var(--p)':'var(--muted)';
+        check.textContent = n>=h.goal?'✅':'—';
+      }
+    }
+  }
 };
 
 window.saveNote = function(){
@@ -647,15 +680,25 @@ window.saveNote = function(){
 };
 
 window.addHabit = function(){
-  const inp = document.getElementById('newHabitInput');
-  const val = inp.value.trim();
+  const nameInp = document.getElementById('newHabitName');
+  const goalInp = document.getElementById('newHabitGoal');
+  const val = nameInp.value.trim();
   if(!val) return;
   const match = val.match(/^(\p{Emoji})\s*(.+)$/u);
   const emoji = match?match[1]:'📌';
   const name = match?match[2].trim():val;
+  const goal = parseFloat(goalInp.value)||1;
   const id = 'h_'+Date.now();
-  customHabits.push({id,emoji,name});
-  inp.value='';
+  customHabits.push({id,emoji,name,goal,unit:'',type:'daily'});
+  nameInp.value='';
+  goalInp.value='';
+  renderHabits();
+  saveConfig();
+};
+
+window.removeHabit = function(id){
+  if(!confirm('Remove this habit?')) return;
+  customHabits = customHabits.filter(h=>h.id!==id);
   renderHabits();
   saveConfig();
 };
@@ -792,19 +835,25 @@ async function renderWeek(){
   document.getElementById('weekWeightList').innerHTML=wHtml||'<div style="color:var(--muted);font-size:13px;padding:8px;text-align:center">No weight data this week</div>';
   drawChart('weightChart',chartLabels,chartData,'#4ecdc4');
 
-  const defaultH=[{id:'strength',name:'🏋️ Strength'},{id:'walk',name:'🚶 Walk'}];
-  const all=[...defaultH,...customHabits.map(h=>({id:h.id,name:h.emoji+' '+h.name}))];
+  const allH=getAllHabits();
   let hHtml='';
-  all.forEach(h=>{
+  allH.forEach(h=>{
+    const isWeekly=h.type==='weekly';
+    let weekTotal=0;
     let dots='';
     for(let i=0;i<7;i++){
       const d2=new Date(today); d2.setDate(today.getDate()-dow+i);
       const entry=db_data[dateKey(d2)];
       const v=entry?.habits?.[h.id]||0;
-      const color=v>=4?'var(--p)':v>=2?'var(--f)':v>0?'var(--muted)':'var(--border)';
-      dots+=`<div style="width:24px;height:24px;border-radius:6px;background:${color};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:${v>0?'#000':'transparent'}">${v||''}</div>`;
+      weekTotal+=v;
+      const met=isWeekly?v>0:(h.goal>0&&v>=h.goal);
+      const hasVal=v>0;
+      const color=met?'var(--p)':hasVal?'var(--f)':'var(--border)';
+      const display=isWeekly?(v>0?'✓':''):(v>0?v.toLocaleString():'');
+      dots+=`<div style="width:24px;height:24px;border-radius:6px;background:${color};display:flex;align-items:center;justify-content:center;font-size:${isWeekly?'10':'8'}px;font-weight:700;color:${hasVal?'#000':'transparent'}">${display}</div>`;
     }
-    hHtml+=`<div class="hh-row"><span class="hh-name">${h.name}</span><div style="display:flex;gap:3px">${dots}</div></div>`;
+    const summary=isWeekly?`${weekTotal}/${h.goal}`:'';
+    hHtml+=`<div class="hh-row"><span class="hh-name">${h.emoji} ${h.name} ${summary}</span><div style="display:flex;gap:3px">${dots}</div></div>`;
   });
   document.getElementById('weekHabits').innerHTML=hHtml||'<div style="color:var(--muted);font-size:13px;padding:8px">No data</div>';
 }
