@@ -259,24 +259,17 @@ canvas{width:100%!important}
   <div class="card">
     <div class="card-title">⚡ Daily Triggers</div>
     <div class="trigger-row">
-      <div class="trigger-label">🌅 Ate before opening computer?</div>
+      <div class="trigger-label">🚫 No unplanned snacking?</div>
       <div class="trig-btns">
-        <button class="trig-btn" onclick="setTrig('morning',true)" id="tm-y">✓</button>
-        <button class="trig-btn" onclick="setTrig('morning',false)" id="tm-n">✗</button>
+        <button class="trig-btn" onclick="setTrig('snacking',true)" id="ts-y">✓</button>
+        <button class="trig-btn" onclick="setTrig('snacking',false)" id="ts-n">✗</button>
       </div>
     </div>
     <div class="trigger-row">
-      <div class="trigger-label">🍗 Ate before cooking for kids?</div>
+      <div class="trigger-label">🕘 Kitchen closed after 9pm?</div>
       <div class="trig-btns">
-        <button class="trig-btn" onclick="setTrig('kids',true)" id="tk-y">✓</button>
-        <button class="trig-btn" onclick="setTrig('kids',false)" id="tk-n">✗</button>
-      </div>
-    </div>
-    <div class="trigger-row">
-      <div class="trigger-label">🌙 No late-night snacking?</div>
-      <div class="trig-btns">
-        <button class="trig-btn" onclick="setTrig('night',true)" id="tn-y">✓</button>
-        <button class="trig-btn" onclick="setTrig('night',false)" id="tn-n">✗</button>
+        <button class="trig-btn" onclick="setTrig('kitchen',true)" id="tk-y">✓</button>
+        <button class="trig-btn" onclick="setTrig('kitchen',false)" id="tk-n">✗</button>
       </div>
     </div>
   </div>
@@ -595,9 +588,9 @@ function renderToday(){
   if(todayData.weight) document.getElementById('weightIn').value = todayData.weight;
 
   // triggers
-  ['morning','kids','night'].forEach(t=>{
+  ['snacking','kitchen'].forEach(t=>{
     const v = todayData.triggers?.[t];
-    const prefixes = {morning:'tm',kids:'tk',night:'tn'};
+    const prefixes = {snacking:'ts',kitchen:'tk'};
     const px = prefixes[t];
     document.getElementById(px+'-y').className = 'trig-btn' + (v===true?' yes':'');
     document.getElementById(px+'-n').className = 'trig-btn' + (v===false?' no':'');
@@ -943,7 +936,7 @@ async function renderStats(){
   const entries=Object.entries(data).sort((a,b)=>a[0]>b[0]?1:-1);
 
   let success=0,bestStreak=0,curStreak=0;
-  const trigCounts={morning:[0,0],kids:[0,0],night:[0,0]};
+  const trigCounts={snacking:[0,0],kitchen:[0,0]};
   const chartL=[],chartD=[];
   let firstW=null,lastW=null;
 
@@ -968,7 +961,7 @@ async function renderStats(){
   document.getElementById('sBestStreak').textContent=bestStreak;
 
   let weakTrig='—', weakPct=1;
-  const trigNames={morning:'🌅 Morning',kids:'🍗 Kids',night:'🌙 Night'};
+  const trigNames={snacking:'🚫 Snacking',kitchen:'🕘 Kitchen'};
   Object.entries(trigCounts).forEach(([t,[total,ok]])=>{
     if(total>0){const pct=ok/total;if(pct<weakPct){weakPct=pct;weakTrig=trigNames[t];}}
   });
