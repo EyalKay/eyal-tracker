@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>אייל | טראקר</title>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<title>Eyal | Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
@@ -12,11 +12,11 @@
   --p:#b5e853;--c:#4ecdc4;--f:#ffa552;--red:#ff6b6b;--purple:#c084fc;
   --text:#f0f0f2;--muted:#5a5a60;--muted2:#3a3a3e;
 }
-body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:430px;margin:0 auto;padding-bottom:80px}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:430px;margin:0 auto;padding-bottom:80px}
 
 /* NAV */
 .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#111113;border-top:1px solid var(--border);display:flex;z-index:100;padding:8px 0 12px}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;color:var(--muted);font-family:'Heebo',sans-serif;font-size:10px;cursor:pointer;padding:4px;transition:color .2s}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:10px;cursor:pointer;padding:4px;transition:color .2s}
 .nav-btn.active{color:var(--p)}
 .nav-btn .ni{font-size:20px}
 
@@ -49,7 +49,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 .mt-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:10px;overflow:hidden}
 .mt-bar-fill{height:100%;border-radius:2px;transition:width .4s ease}
 .mt-btns{display:flex;justify-content:center;gap:8px}
-.mt-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Heebo',sans-serif;transition:transform .1s;user-select:none}
+.mt-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;transition:transform .1s;user-select:none}
 .mt-btn:active{transform:scale(.88)}
 
 /* STATUS */
@@ -62,7 +62,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 /* WEIGHT INPUT */
 .weight-row{display:flex;align-items:center;gap:10px}
 .weight-label{flex:1;font-size:13px;color:var(--muted)}
-.w-input{background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Heebo',sans-serif;font-size:20px;font-weight:700;width:90px;padding:8px 10px;text-align:center;direction:ltr}
+.w-input{background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:20px;font-weight:700;width:90px;padding:8px 10px;text-align:center}
 .w-input:focus{outline:none;border-color:var(--c)}
 .w-unit{font-size:12px;color:var(--muted)}
 
@@ -71,12 +71,12 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 .trigger-row:last-child{margin-bottom:0}
 .trigger-label{flex:1;font-size:13px}
 .trig-btns{display:flex;gap:4px}
-.trig-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:none;font-family:'Heebo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);transition:all .15s}
+.trig-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:none;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);transition:all .15s}
 .trig-btn.yes{background:#0d2010;border-color:var(--p);color:var(--p)}
 .trig-btn.no{background:#200808;border-color:var(--red);color:var(--red)}
 
 /* NOTE */
-.note-input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Heebo',sans-serif;font-size:13px;padding:10px 12px;resize:none;height:60px}
+.note-input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:10px 12px;resize:none;height:60px}
 .note-input:focus{outline:none;border-color:var(--muted)}
 .note-input::placeholder{color:var(--muted)}
 
@@ -86,13 +86,13 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-h
 .habit-emoji{font-size:20px;width:28px;text-align:center}
 .habit-label{flex:1;font-size:13px}
 .intensity-btns{display:flex;gap:3px}
-.int-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;font-family:'Heebo',sans-serif;transition:all .15s}
+.int-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
 .int-btn.active{color:#000;font-weight:900}
 .habit-add{display:flex;gap:8px;margin-top:10px}
-.habit-add input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Heebo',sans-serif;font-size:13px;padding:8px 12px}
+.habit-add input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:8px 12px}
 .habit-add input:focus{outline:none;border-color:var(--c)}
 .habit-add input::placeholder{color:var(--muted)}
-.add-btn{padding:8px 14px;border-radius:10px;border:1px solid var(--p);background:none;color:var(--p);font-family:'Heebo',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.add-btn{padding:8px 14px;border-radius:10px;border:1px solid var(--p);background:none;color:var(--p);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
 
 /* WEEK PAGE */
 .week-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:16px}
@@ -118,7 +118,7 @@ canvas{width:100%!important}
 .wh-row:last-child{border-bottom:none}
 .wh-date{color:var(--muted);font-size:12px}
 .wh-val{font-weight:700}
-.delta{font-size:11px;margin-right:4px}
+.delta{font-size:11px;margin-left:4px}
 .delta.down{color:var(--p)}
 .delta.up{color:var(--red)}
 
@@ -130,7 +130,7 @@ canvas{width:100%!important}
 /* GOAL */
 .goal-row{display:flex;align-items:center;gap:10px}
 .goal-lbl{flex:1;font-size:13px}
-.goal-input{background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Heebo',sans-serif;font-size:18px;font-weight:700;width:80px;padding:7px 10px;text-align:center;direction:ltr}
+.goal-input{background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:18px;font-weight:700;width:80px;padding:7px 10px;text-align:center}
 .goal-input:focus{outline:none;border-color:var(--p)}
 .goal-progress{margin-top:12px}
 .goal-bar-wrap{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin:6px 0}
@@ -142,7 +142,7 @@ canvas{width:100%!important}
 
 /* RESET */
 .danger-card{border-color:var(--muted2)}
-.reset-btn{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--muted);font-family:'Heebo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;transition:all .15s}
+.reset-btn{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;transition:all .15s}
 .reset-btn:last-child{margin-bottom:0}
 .reset-btn:active{transform:scale(.98)}
 .reset-all{border-color:var(--red);color:var(--red)}
@@ -158,17 +158,17 @@ canvas{width:100%!important}
 <div class="page active" id="page-today">
   <div class="page-header">
     <div>
-      <div class="page-title">היום 💪</div>
+      <div class="page-title">Today 💪</div>
       <div class="page-sub" id="todayDate"></div>
     </div>
-    <div class="sync-dot" id="syncDot" title="סנכרון"></div>
+    <div class="sync-dot" id="syncDot" title="Sync"></div>
   </div>
 
   <!-- MACROS -->
   <div class="macros-row">
     <div class="macro-tile" id="tile-p" style="color:var(--p)">
       <div class="mt-emoji">🥩</div>
-      <div class="mt-name">חלבון</div>
+      <div class="mt-name">Protein</div>
       <div class="mt-val" id="v-p">0</div>
       <div class="mt-target">/ 5</div>
       <div class="mt-bar"><div class="mt-bar-fill" id="b-p" style="background:var(--p);width:0%"></div></div>
@@ -179,7 +179,7 @@ canvas{width:100%!important}
     </div>
     <div class="macro-tile" id="tile-c" style="color:var(--c)">
       <div class="mt-emoji">🍚</div>
-      <div class="mt-name">פחמימה</div>
+      <div class="mt-name">Carbs</div>
       <div class="mt-val" id="v-c">0</div>
       <div class="mt-target">/ 3</div>
       <div class="mt-bar"><div class="mt-bar-fill" id="b-c" style="background:var(--c);width:0%"></div></div>
@@ -190,7 +190,7 @@ canvas{width:100%!important}
     </div>
     <div class="macro-tile" id="tile-f" style="color:var(--f)">
       <div class="mt-emoji">🥑</div>
-      <div class="mt-name">שומן</div>
+      <div class="mt-name">Fat</div>
       <div class="mt-val" id="v-f">0</div>
       <div class="mt-target">/ 2</div>
       <div class="mt-bar"><div class="mt-bar-fill" id="b-f" style="background:var(--f);width:0%"></div></div>
@@ -202,38 +202,38 @@ canvas{width:100%!important}
   </div>
 
   <div class="status-bar empty" id="statusBar">
-    <span id="statusIcon">📋</span><span id="statusText">התחל לסמן ארוחות</span>
+    <span id="statusIcon">📋</span><span id="statusText">Start logging meals</span>
   </div>
 
   <!-- WEIGHT -->
   <div class="card">
-    <div class="card-title">⚖️ משקל בוקר</div>
+    <div class="card-title">⚖️ Morning Weight</div>
     <div class="weight-row">
-      <div class="weight-label">הזן משקל</div>
+      <div class="weight-label">Enter weight</div>
       <input class="w-input" type="number" id="weightIn" placeholder="87" step="0.1" min="40" max="200" oninput="saveWeight()">
-      <div class="w-unit">ק״ג</div>
+      <div class="w-unit">kg</div>
     </div>
   </div>
 
   <!-- TRIGGERS -->
   <div class="card">
-    <div class="card-title">⚡ טריגרים יומיים</div>
+    <div class="card-title">⚡ Daily Triggers</div>
     <div class="trigger-row">
-      <div class="trigger-label">🌅 אכלתי לפני שפתחתי מחשב?</div>
+      <div class="trigger-label">🌅 Ate before opening computer?</div>
       <div class="trig-btns">
         <button class="trig-btn" onclick="setTrig('morning',true)" id="tm-y">✓</button>
         <button class="trig-btn" onclick="setTrig('morning',false)" id="tm-n">✗</button>
       </div>
     </div>
     <div class="trigger-row">
-      <div class="trigger-label">🍗 אכלתי לפני שבישלתי לילדים?</div>
+      <div class="trigger-label">🍗 Ate before cooking for kids?</div>
       <div class="trig-btns">
         <button class="trig-btn" onclick="setTrig('kids',true)" id="tk-y">✓</button>
         <button class="trig-btn" onclick="setTrig('kids',false)" id="tk-n">✗</button>
       </div>
     </div>
     <div class="trigger-row">
-      <div class="trigger-label">🌙 ללא נשנוש לילה?</div>
+      <div class="trigger-label">🌙 No late-night snacking?</div>
       <div class="trig-btns">
         <button class="trig-btn" onclick="setTrig('night',true)" id="tn-y">✓</button>
         <button class="trig-btn" onclick="setTrig('night',false)" id="tn-n">✗</button>
@@ -243,25 +243,25 @@ canvas{width:100%!important}
 
   <!-- HABITS -->
   <div class="card">
-    <div class="card-title">🎯 הרגלים</div>
+    <div class="card-title">🎯 Habits</div>
     <div id="habitsList"></div>
     <div class="habit-add">
-      <input type="text" id="newHabitInput" placeholder="הוסף הרגל + אמוג׳י...">
-      <button class="add-btn" onclick="addHabit()">+ הוסף</button>
+      <input type="text" id="newHabitInput" placeholder="Add habit + emoji...">
+      <button class="add-btn" onclick="addHabit()">+ Add</button>
     </div>
   </div>
 
   <!-- NOTE -->
   <div class="card">
-    <div class="card-title">📝 הערה יומית</div>
-    <textarea class="note-input" id="noteInput" placeholder="איך היה היום? נפלתי על משהו?" oninput="saveNote()"></textarea>
+    <div class="card-title">📝 Daily Note</div>
+    <textarea class="note-input" id="noteInput" placeholder="How was today? Any slips?" oninput="saveNote()"></textarea>
   </div>
 
   <!-- RESET -->
   <div class="card danger-card">
-    <div class="card-title">🗑️ איפוס</div>
-    <button class="reset-btn" onclick="resetToday()">אפס את היום</button>
-    <button class="reset-btn reset-all" onclick="resetAll()">אפס הכל — כל הנתונים והיעדים</button>
+    <div class="card-title">🗑️ Reset</div>
+    <button class="reset-btn" onclick="resetToday()">Reset Today</button>
+    <button class="reset-btn reset-all" onclick="resetAll()">Reset All — All Data & Goals</button>
   </div>
 </div>
 
@@ -269,7 +269,7 @@ canvas{width:100%!important}
 <div class="page" id="page-week">
   <div class="page-header">
     <div>
-      <div class="page-title">שבוע 📊</div>
+      <div class="page-title">Week 📊</div>
       <div class="page-sub" id="weekSub"></div>
     </div>
   </div>
@@ -279,38 +279,38 @@ canvas{width:100%!important}
   <div class="stats-grid">
     <div class="stat-tile">
       <div class="stat-val" id="wDays" style="color:var(--p)">0</div>
-      <div class="stat-lbl">ימים מלאים</div>
+      <div class="stat-lbl">Full Days</div>
     </div>
     <div class="stat-tile">
       <div class="stat-val" id="wStreak" style="color:var(--f)">0</div>
-      <div class="stat-lbl">רצף 🔥</div>
+      <div class="stat-lbl">Streak 🔥</div>
     </div>
     <div class="stat-tile">
       <div class="stat-val" id="wAvgCal" style="color:var(--c)">0</div>
-      <div class="stat-lbl">קל׳ ממוצע</div>
+      <div class="stat-lbl">Avg Calories</div>
     </div>
     <div class="stat-tile">
       <div class="stat-val" id="wTrigOk" style="color:var(--purple)">0%</div>
-      <div class="stat-lbl">טריגרים ✓</div>
+      <div class="stat-lbl">Triggers ✓</div>
     </div>
   </div>
 
   <!-- WEIGHT CHART -->
   <div class="card">
-    <div class="card-title">📈 משקל השבוע</div>
+    <div class="card-title">📈 Weight This Week</div>
     <div class="chart-wrap"><canvas id="weightChart"></canvas></div>
   </div>
 
   <!-- WEIGHT LIST -->
   <div class="card">
-    <div class="card-title">⚖️ יומן משקל</div>
-    <div id="weekWeightList"><div class="loader">טוען...</div></div>
+    <div class="card-title">⚖️ Weight Log</div>
+    <div id="weekWeightList"><div class="loader">Loading...</div></div>
   </div>
 
   <!-- HABITS WEEK -->
   <div class="card">
-    <div class="card-title">🎯 הרגלים השבוע</div>
-    <div id="weekHabits"><div class="loader">טוען...</div></div>
+    <div class="card-title">🎯 Habits This Week</div>
+    <div id="weekHabits"><div class="loader">Loading...</div></div>
   </div>
 </div>
 
@@ -318,62 +318,62 @@ canvas{width:100%!important}
 <div class="page" id="page-stats">
   <div class="page-header">
     <div>
-      <div class="page-title">סטטיסטיקות 🧠</div>
-      <div class="page-sub">30 יום אחרונים</div>
+      <div class="page-title">Statistics 🧠</div>
+      <div class="page-sub">Last 30 days</div>
     </div>
   </div>
 
   <!-- GOAL -->
   <div class="card">
-    <div class="card-title">🎯 יעד משקל</div>
+    <div class="card-title">🎯 Weight Goal</div>
     <div class="goal-row">
-      <div class="goal-lbl">יעד:</div>
+      <div class="goal-lbl">Goal:</div>
       <input class="goal-input" type="number" id="goalInput" placeholder="77" step="0.5" oninput="saveGoal()">
-      <div class="w-unit">ק״ג</div>
+      <div class="w-unit">kg</div>
     </div>
     <div class="goal-progress">
       <div class="goal-bar-wrap"><div class="goal-bar-fill" id="goalBar" style="width:0%"></div></div>
-      <div class="goal-text" id="goalText">הגדר יעד</div>
+      <div class="goal-text" id="goalText">Set a goal</div>
     </div>
   </div>
 
   <div class="stats-grid">
     <div class="stat-tile">
       <div class="stat-val" id="s30days" style="color:var(--p)">0</div>
-      <div class="stat-lbl">ימי הצלחה / 30</div>
+      <div class="stat-lbl">Success Days / 30</div>
     </div>
     <div class="stat-tile">
       <div class="stat-val" id="sBestStreak" style="color:var(--f)">0</div>
-      <div class="stat-lbl">רצף שיא 🏆</div>
+      <div class="stat-lbl">Best Streak 🏆</div>
     </div>
     <div class="stat-tile">
       <div class="stat-val" id="sWeakTrig" style="color:var(--red);font-size:18px">—</div>
-      <div class="stat-lbl">טריגר הכי חלש</div>
+      <div class="stat-lbl">Weakest Trigger</div>
     </div>
     <div class="stat-tile">
       <div class="stat-val" id="sWeightDelta" style="color:var(--c)">—</div>
-      <div class="stat-lbl">שינוי משקל חודש</div>
+      <div class="stat-lbl">Monthly Weight Change</div>
     </div>
   </div>
 
   <!-- 30 DAY CHART -->
   <div class="card">
-    <div class="card-title">📈 מגמת משקל — 30 יום</div>
+    <div class="card-title">📈 Weight Trend — 30 Days</div>
     <div class="chart-wrap" style="height:140px"><canvas id="statsChart"></canvas></div>
   </div>
 
   <!-- HISTORY -->
   <div class="card">
-    <div class="card-title">📋 היסטוריה מלאה</div>
-    <div id="fullHistory"><div class="loader">טוען...</div></div>
+    <div class="card-title">📋 Full History</div>
+    <div id="fullHistory"><div class="loader">Loading...</div></div>
   </div>
 </div>
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
-  <button class="nav-btn active" onclick="goPage('today',this)"><span class="ni">📋</span>היום</button>
-  <button class="nav-btn" onclick="goPage('week',this)"><span class="ni">📊</span>שבוע</button>
-  <button class="nav-btn" onclick="goPage('stats',this)"><span class="ni">🧠</span>סטטס</button>
+  <button class="nav-btn active" onclick="goPage('today',this)"><span class="ni">📋</span>Today</button>
+  <button class="nav-btn" onclick="goPage('week',this)"><span class="ni">📊</span>Week</button>
+  <button class="nav-btn" onclick="goPage('stats',this)"><span class="ni">🧠</span>Stats</button>
 </nav>
 
 <!-- Firebase -->
@@ -382,7 +382,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getFirestore, doc, setDoc, getDoc, deleteDoc, collection, getDocs, query, orderBy, limit }
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// ── CONFIG — replace with yours if needed ──
+// ── CONFIG ──
 const firebaseConfig = {
   apiKey: "AIzaSyCMet8ZlXRWCHnLwdxcECNBYiZIbz2yank",
   authDomain: "eyal-tracker.firebaseapp.com",
@@ -400,8 +400,8 @@ const TARGETS = {p:5, c:3, f:2};
 const CAL = {p:220, c:190, f:145};
 const TARGET_CAL = TARGETS.p*CAL.p + TARGETS.c*CAL.c + TARGETS.f*CAL.f; // 1960
 const USER = 'eyal';
-const HEB_DAYS = ['א','ב','ג','ד','ה','ו','ש'];
-const HEB_DAYNAMES = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const EN_DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const EN_DAYS_SHORT = ['S','M','T','W','T','F','S'];
 
 function todayKey(){
   const d=new Date();
@@ -469,7 +469,7 @@ async function saveConfig(){
 function renderToday(){
   const now = new Date();
   document.getElementById('todayDate').textContent =
-    `יום ${HEB_DAYNAMES[now.getDay()]}, ${now.toLocaleDateString('he-IL')}`;
+    `${EN_DAYS[now.getDay()]}, ${now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
 
   ['p','c','f'].forEach(m=>{
     const v = todayData[m]||0;
@@ -488,10 +488,10 @@ function renderToday(){
   const icon = document.getElementById('statusIcon');
   const txt = document.getElementById('statusText');
   bar.className = 'status-bar';
-  if(!total){ bar.classList.add('empty'); icon.textContent='📋'; txt.textContent='התחל לסמן ארוחות'; }
-  else if(over){ bar.classList.add('over'); icon.textContent='⚠️'; txt.textContent=`חרגת — ${cal} קל׳`; }
-  else if(done){ bar.classList.add('ok'); icon.textContent='✅'; txt.textContent=`יעד הושג! ~${cal} קל׳`; }
-  else{ bar.classList.add('warn'); icon.textContent='🎯'; txt.textContent=`${cal} קל׳ | נשאר ~${TARGET_CAL-cal}`; }
+  if(!total){ bar.classList.add('empty'); icon.textContent='📋'; txt.textContent='Start logging meals'; }
+  else if(over){ bar.classList.add('over'); icon.textContent='⚠️'; txt.textContent=`Over target — ${cal} cal`; }
+  else if(done){ bar.classList.add('ok'); icon.textContent='✅'; txt.textContent=`Target reached! ~${cal} cal`; }
+  else{ bar.classList.add('warn'); icon.textContent='🎯'; txt.textContent=`${cal} cal | ~${TARGET_CAL-cal} remaining`; }
 
   if(todayData.weight) document.getElementById('weightIn').value = todayData.weight;
 
@@ -509,7 +509,7 @@ function renderToday(){
 
 // ── HABITS RENDER ──
 function renderHabits(){
-  const defaultH = [{id:'strength',emoji:'🏋️',name:'אימון כוח'},{id:'walk',emoji:'🚶',name:'הליכה/ריצה'}];
+  const defaultH = [{id:'strength',emoji:'🏋️',name:'Strength Training'},{id:'walk',emoji:'🚶',name:'Walk / Run'}];
   const all = [...defaultH, ...customHabits];
   const vals = todayData.habits||{};
 
@@ -520,7 +520,7 @@ function renderHabits(){
     for(let i=1;i<=5;i++){
       const colors=['#333','#ffa552','#ffa552','#b5e853','#b5e853','#b5e853'];
       const active = v>=i;
-      btns+=`<button class="int-btn ${active?'active':''}" 
+      btns+=`<button class="int-btn ${active?'active':''}"
         style="${active?`background:${colors[i]};border-color:${colors[i]}`:''}"
         onclick="setHabit('${h.id}',${i})">${i}</button>`;
     }
@@ -588,7 +588,7 @@ window.saveGoal = function(){
 };
 
 window.resetToday = async function(){
-  if(!confirm('לאפס את כל הנתונים של היום?')) return;
+  if(!confirm('Reset all of today\'s data?')) return;
   todayData = {p:0,c:0,f:0,weight:null,triggers:{},habits:{},note:''};
   document.getElementById('weightIn').value='';
   document.getElementById('noteInput').value='';
@@ -598,21 +598,18 @@ window.resetToday = async function(){
 };
 
 window.resetAll = async function(){
-  if(!confirm('למחוק את כל הנתונים, ההרגלים והיעדים?\nפעולה זו בלתי הפיכה!')) return;
-  if(!confirm('בטוח? כל ההיסטוריה תימחק לצמיתות.')) return;
+  if(!confirm('Delete all data, habits, and goals?\nThis cannot be undone!')) return;
+  if(!confirm('Are you sure? All history will be permanently deleted.')) return;
   setSyncState('syncing');
   try{
-    // delete all day docs
     const snap = await getDocs(collection(db, USER));
     const deletes = [];
     snap.forEach(d => { deletes.push(deleteDoc(doc(db, USER, d.id))); });
     await Promise.all(deletes);
-    // reset config
     customHabits = [];
     goalWeight = null;
     startingWeight = 87;
     await saveConfig();
-    // reset today
     todayData = {p:0,c:0,f:0,weight:null,triggers:{},habits:{},note:''};
     document.getElementById('weightIn').value='';
     document.getElementById('noteInput').value='';
@@ -654,7 +651,6 @@ async function renderWeek(){
   const dow=today.getDay();
   const db_data = await loadAllDays(14);
 
-  // strip
   let stripHtml='';
   let successCount=0;
   for(let i=0;i<7;i++){
@@ -670,29 +666,27 @@ async function renderWeek(){
     if(success){cls+=' full';txt='✓';}
     else if(partial){cls+=' partial';txt='~';}
     if(isToday) cls+=' today';
-    stripHtml+=`<div class="wday"><div class="wday-lbl">${HEB_DAYS[i]}</div><div class="${cls}">${txt}</div></div>`;
+    stripHtml+=`<div class="wday"><div class="wday-lbl">${EN_DAYS_SHORT[i]}</div><div class="${cls}">${txt}</div></div>`;
   }
   document.getElementById('weekStrip').innerHTML=stripHtml;
   document.getElementById('wDays').textContent=successCount;
   document.getElementById('wStreak').textContent=calcStreak(db_data);
 
-  // avg cal
   let totalCal=0,calDays=0;
   Object.values(db_data).forEach(e=>{
     if(e){ const c=(e.p||0)*CAL.p+(e.c||0)*CAL.c+(e.f||0)*CAL.f; if(c>0){totalCal+=c;calDays++;} }
   });
   document.getElementById('wAvgCal').textContent=calDays?Math.round(totalCal/calDays):0;
 
-  // trig %
   let trigTotal=0,trigOk=0;
   Object.values(db_data).forEach(e=>{
     if(e?.triggers){ Object.values(e.triggers).forEach(v=>{trigTotal++;if(v===true)trigOk++;}); }
   });
   document.getElementById('wTrigOk').textContent=trigTotal?Math.round(trigOk/trigTotal*100)+'%':'—';
 
-  document.getElementById('weekSub').textContent=`שבוע ${Math.ceil((today.getDate())/7)} | ${today.toLocaleDateString('he-IL',{month:'long'})}`;
+  const monthName=today.toLocaleDateString('en-US',{month:'long'});
+  document.getElementById('weekSub').textContent=`Week ${Math.ceil(today.getDate()/7)} | ${monthName}`;
 
-  // weight list + chart
   let wHtml='';
   const chartLabels=[];
   const chartData=[];
@@ -701,21 +695,20 @@ async function renderWeek(){
     const d=new Date(today); d.setDate(today.getDate()-dow+i);
     const key=dateKey(d);
     const entry=db_data[key];
-    const lbl=HEB_DAYS[i];
+    const lbl=EN_DAYS_SHORT[i];
     if(entry?.weight){
       const delta=prevW!==null?(entry.weight-prevW):null;
       const dHtml=delta!==null?`<span class="delta ${delta<=0?'down':'up'}">${delta>0?'+':''}${delta.toFixed(1)}</span>`:'';
-      wHtml+=`<div class="wh-row"><span class="wh-date">${lbl} ${d.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'})}</span><span class="wh-val">${dHtml} ${entry.weight} ק״ג</span></div>`;
+      wHtml+=`<div class="wh-row"><span class="wh-date">${EN_DAYS[d.getDay()]} ${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span><span class="wh-val">${dHtml} ${entry.weight} kg</span></div>`;
       chartLabels.push(lbl);
       chartData.push(entry.weight);
       prevW=entry.weight;
     }
   }
-  document.getElementById('weekWeightList').innerHTML=wHtml||'<div style="color:var(--muted);font-size:13px;padding:8px;text-align:center">אין נתוני משקל השבוע</div>';
+  document.getElementById('weekWeightList').innerHTML=wHtml||'<div style="color:var(--muted);font-size:13px;padding:8px;text-align:center">No weight data this week</div>';
   drawChart('weightChart',chartLabels,chartData,'#4ecdc4');
 
-  // habits week
-  const defaultH=[{id:'strength',name:'🏋️ כוח'},{id:'walk',name:'🚶 הליכה'}];
+  const defaultH=[{id:'strength',name:'🏋️ Strength'},{id:'walk',name:'🚶 Walk'}];
   const all=[...defaultH,...customHabits.map(h=>({id:h.id,name:h.emoji+' '+h.name}))];
   let hHtml='';
   all.forEach(h=>{
@@ -729,7 +722,7 @@ async function renderWeek(){
     }
     hHtml+=`<div class="hh-row"><span class="hh-name">${h.name}</span><div style="display:flex;gap:3px">${dots}</div></div>`;
   });
-  document.getElementById('weekHabits').innerHTML=hHtml||'<div style="color:var(--muted);font-size:13px;padding:8px">אין נתונים</div>';
+  document.getElementById('weekHabits').innerHTML=hHtml||'<div style="color:var(--muted);font-size:13px;padding:8px">No data</div>';
 }
 
 // ── STATS ──
@@ -762,15 +755,13 @@ async function renderStats(){
   document.getElementById('s30days').textContent=success;
   document.getElementById('sBestStreak').textContent=bestStreak;
 
-  // weak trigger
   let weakTrig='—', weakPct=1;
-  const trigNames={morning:'🌅 בוקר',kids:'🍗 ילדים',night:'🌙 לילה'};
+  const trigNames={morning:'🌅 Morning',kids:'🍗 Kids',night:'🌙 Night'};
   Object.entries(trigCounts).forEach(([t,[total,ok]])=>{
     if(total>0){const pct=ok/total;if(pct<weakPct){weakPct=pct;weakTrig=trigNames[t];}}
   });
   document.getElementById('sWeakTrig').textContent=weakTrig;
 
-  // weight delta
   if(firstW&&lastW){
     const d=lastW-firstW;
     document.getElementById('sWeightDelta').textContent=(d>0?'+':'')+d.toFixed(1);
@@ -779,13 +770,11 @@ async function renderStats(){
 
   drawChart('statsChart',chartL.slice(-20),chartD.slice(-20),'#b5e853');
 
-  // goal
   if(goalWeight){
     document.getElementById('goalInput').value=goalWeight;
     renderGoal();
   }
 
-  // history
   let hHtml='';
   [...entries].reverse().forEach(([key,e])=>{
     if(!e) return;
@@ -794,29 +783,29 @@ async function renderStats(){
     const ok=isSuccess(e);
     hHtml+=`<div class="wh-row">
       <div>
-        <div>${d.toLocaleDateString('he-IL',{weekday:'short',day:'numeric',month:'numeric'})}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">חלבון ${e.p||0}/5 · פחמימה ${e.c||0}/3 · שומן ${e.f||0}/2 · ~${cal}קל׳</div>
+        <div>${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">P ${e.p||0}/5 · C ${e.c||0}/3 · F ${e.f||0}/2 · ~${cal} cal</div>
       </div>
-      <div style="text-align:left">
+      <div style="text-align:right">
         <div style="font-size:13px;font-weight:700;color:${ok?'var(--p)':'var(--muted)'}">${ok?'✅':'—'}</div>
-        ${e.weight?`<div style="font-size:11px;color:var(--muted)">${e.weight}ק״ג</div>`:''}
+        ${e.weight?`<div style="font-size:11px;color:var(--muted)">${e.weight} kg</div>`:''}
       </div>
     </div>`;
   });
-  document.getElementById('fullHistory').innerHTML=hHtml||'<div style="color:var(--muted);font-size:13px;padding:8px;text-align:center">אין נתונים</div>';
+  document.getElementById('fullHistory').innerHTML=hHtml||'<div style="color:var(--muted);font-size:13px;padding:8px;text-align:center">No data</div>';
 }
 
 function renderGoal(){
   const g=goalWeight;
   const w=todayData.weight||null;
-  if(!g||!w){document.getElementById('goalText').textContent='הזן משקל נוכחי ויעד';return;}
+  if(!g||!w){document.getElementById('goalText').textContent='Enter current weight and goal';return;}
   const startW=startingWeight||w;
   const total=startW-g;
-  if(total<=0){document.getElementById('goalText').textContent='היעד גבוה מהמשקל ההתחלתי';return;}
+  if(total<=0){document.getElementById('goalText').textContent='Goal is higher than starting weight';return;}
   const done=startW-w;
   const pct=Math.max(0,Math.min(done/total*100,100));
   document.getElementById('goalBar').style.width=pct+'%';
-  document.getElementById('goalText').textContent=`נשאר ${Math.max(0,(w-g).toFixed(1))} ק״ג ליעד (${Math.round(pct)}% הושג)`;
+  document.getElementById('goalText').textContent=`${Math.max(0,(w-g).toFixed(1))} kg to go (${Math.round(pct)}% done)`;
 }
 
 // ── CHART ──
@@ -833,30 +822,25 @@ function drawChart(canvasId, labels, data, color){
   const mn=Math.min(...data)-0.5, mx=Math.max(...data)+0.5;
   const xStep=W/(data.length-1);
   const yScale=(H-20)/(mx-mn);
-  // grid
   ctx.strokeStyle='#2a2a2a';ctx.lineWidth=1;
   for(let i=0;i<=4;i++){
     const y=10+(mx-mn-i*(mx-mn)/4)*yScale;
     ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
   }
-  // line
   ctx.beginPath();
   data.forEach((v,i)=>{
     const x=i*xStep, y=10+(mx-v)*yScale;
     i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
   });
   ctx.strokeStyle=color;ctx.lineWidth=2;ctx.lineJoin='round';ctx.stroke();
-  // fill
   ctx.lineTo((data.length-1)*xStep,H);ctx.lineTo(0,H);ctx.closePath();
   ctx.fillStyle=color+'22';ctx.fill();
-  // dots
   data.forEach((v,i)=>{
     const x=i*xStep, y=10+(mx-v)*yScale;
     ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);
     ctx.fillStyle=color;ctx.fill();
   });
-  // labels
-  ctx.fillStyle='#5a5a60';ctx.font='9px Heebo';ctx.textAlign='center';
+  ctx.fillStyle='#5a5a60';ctx.font='9px Inter';ctx.textAlign='center';
   labels.forEach((l,i)=>ctx.fillText(l,i*xStep,H-2));
 }
 
@@ -873,7 +857,6 @@ function calcStreak(data){
   let s=0;
   const today=new Date();
   let start=0;
-  // skip today if no data yet
   const todayEntry=data[dateKey(today)];
   if(!todayEntry || !isPartial(todayEntry)) start=1;
   for(let i=start;i<365;i++){
