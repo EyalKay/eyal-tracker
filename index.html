@@ -60,8 +60,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .status-bar.over{background:#200808;border:1px solid #501010;color:var(--red)}
 
 /* WEIGHT INPUT */
-.weight-row{display:flex;align-items:center;gap:10px}
+.weight-row{display:flex;align-items:center;gap:8px}
 .weight-label{flex:1;font-size:13px;color:var(--muted)}
+.w-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;transition:transform .1s;user-select:none}
+.w-btn:active{transform:scale(.88)}
 .w-input{background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:20px;font-weight:700;width:90px;padding:8px 10px;text-align:center}
 .w-input:focus{outline:none;border-color:var(--c)}
 .w-unit{font-size:12px;color:var(--muted)}
@@ -87,8 +89,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .habit-info{flex:1}
 .habit-label{font-size:13px}
 .habit-goal{font-size:10px;color:var(--muted)}
-.habit-input-wrap{display:flex;align-items:center;gap:6px}
-.habit-val{background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:16px;font-weight:700;width:65px;padding:6px;text-align:center}
+.habit-input-wrap{display:flex;align-items:center;gap:4px}
+.habit-pm{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;transition:transform .1s;user-select:none;flex-shrink:0}
+.habit-pm:active{transform:scale(.88)}
+.habit-val{background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:16px;font-weight:700;width:60px;padding:6px;text-align:center}
 .habit-val:focus{outline:none;border-color:var(--c)}
 .habit-check{font-size:14px}
 .habit-del{background:none;border:none;color:var(--muted2);font-size:14px;cursor:pointer;padding:2px 4px}
@@ -98,6 +102,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .habit-add input:focus{outline:none;border-color:var(--c)}
 .habit-add input::placeholder{color:var(--muted)}
 .add-btn{padding:8px 14px;border-radius:10px;border:1px solid var(--p);background:none;color:var(--p);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.habit-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.suggest-chip{padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:11px;cursor:pointer;transition:all .15s}
+.suggest-chip:active{transform:scale(.95);border-color:var(--p);color:var(--p)}
 
 /* WEEK PAGE */
 .week-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:16px}
@@ -241,7 +248,9 @@ canvas{width:100%!important}
     <div class="card-title">⚖️ Morning Weight</div>
     <div class="weight-row">
       <div class="weight-label">Enter weight</div>
+      <button class="w-btn" ontouchstart="" onclick="chgWeight(-0.1)">−</button>
       <input class="w-input" type="number" id="weightIn" placeholder="87" step="0.1" min="40" max="200" oninput="saveWeight()">
+      <button class="w-btn" ontouchstart="" onclick="chgWeight(0.1)" style="border-color:var(--c)">+</button>
       <div class="w-unit">kg</div>
     </div>
   </div>
@@ -276,6 +285,7 @@ canvas{width:100%!important}
   <div class="card">
     <div class="card-title">🎯 Habits</div>
     <div id="habitsList"></div>
+    <div id="habitSuggestions" class="habit-suggestions"></div>
     <div class="habit-add">
       <input type="text" id="newHabitName" placeholder="Habit + emoji...">
       <select id="newHabitMode" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;padding:8px 4px">
@@ -622,9 +632,19 @@ function habitCheckHtml(h, v){
   return met?'<span class="habit-check" style="color:var(--p)">✅</span>':'<span class="habit-check" style="color:var(--muted)">—</span>';
 }
 
+const HABIT_SUGGESTIONS = [
+  {emoji:'☕',name:'Coffee',goal:2,mode:'max',unit:''},
+  {emoji:'💧',name:'Water (glasses)',goal:8,mode:'min',unit:''},
+  {emoji:'😴',name:'Sleep (hours)',goal:7,mode:'min',unit:'hrs'},
+  {emoji:'📵',name:'Screen Time (hrs)',goal:3,mode:'max',unit:'hrs'},
+  {emoji:'🧘',name:'Meditation (min)',goal:10,mode:'min',unit:'min'},
+  {emoji:'📖',name:'Reading (min)',goal:20,mode:'min',unit:'min'},
+];
+
 function renderHabits(){
   const all = getAllHabits();
   const vals = todayData.habits||{};
+  const existingIds = all.map(h=>h.name.toLowerCase());
 
   let html = '';
   all.forEach(h=>{
@@ -632,6 +652,7 @@ function renderHabits(){
     const goal = h.goal||0;
     const isCustom = !DEFAULT_HABITS.find(d=>d.id===h.id);
     const modeLabel = h.mode==='max'?'Max':'Min';
+    const step = h.id==='steps'?1000:1;
     const delBtn = isCustom?`<button class="habit-del" onclick="removeHabit('${h.id}')">✕</button>`:'';
     html+=`<div class="habit-row">
       <div class="habit-emoji">${h.emoji}</div>
@@ -640,14 +661,27 @@ function renderHabits(){
         <div class="habit-goal">${modeLabel}: ${goal.toLocaleString()} ${h.unit||''}</div>
       </div>
       <div class="habit-input-wrap">
+        <button class="habit-pm" ontouchstart="" onclick="chgHabit('${h.id}',${-step})">−</button>
         <input class="habit-val" type="number" value="${v||''}" placeholder="0"
           oninput="setHabit('${h.id}',this.value)">
+        <button class="habit-pm" ontouchstart="" onclick="chgHabit('${h.id}',${step})">+</button>
         ${habitCheckHtml(h, v)}
         ${delBtn}
       </div>
     </div>`;
   });
   document.getElementById('habitsList').innerHTML = html;
+
+  // suggestions - only show ones not already added
+  const suggestEl = document.getElementById('habitSuggestions');
+  const available = HABIT_SUGGESTIONS.filter(s=>!existingIds.includes(s.name.toLowerCase()));
+  if(available.length){
+    suggestEl.innerHTML = available.map(s=>
+      `<button class="suggest-chip" onclick="quickAddHabit('${s.emoji}','${s.name}',${s.goal},'${s.mode}','${s.unit}')">${s.emoji} ${s.name}</button>`
+    ).join('');
+  } else {
+    suggestEl.innerHTML = '';
+  }
 }
 
 // ── ACTIONS ──
@@ -662,6 +696,16 @@ window.chg = function(m, d){
 window.saveWeight = function(){
   const v = parseFloat(document.getElementById('weightIn').value);
   todayData.weight = isNaN(v)?null:v;
+  saveToday();
+};
+
+window.chgWeight = function(d){
+  const inp = document.getElementById('weightIn');
+  let v = parseFloat(inp.value)||0;
+  v = Math.round((v+d)*10)/10;
+  if(v<40||v>200) return;
+  inp.value = v;
+  todayData.weight = v;
   saveToday();
 };
 
@@ -709,6 +753,22 @@ window.addHabit = function(){
   customHabits.push({id,emoji,name,goal,unit:'',type:'daily',mode});
   nameInp.value='';
   goalInp.value='';
+  renderHabits();
+  saveConfig();
+};
+
+window.chgHabit = function(id, d){
+  if(!todayData.habits) todayData.habits={};
+  const cur = todayData.habits[id]||0;
+  const n = Math.max(0, cur+d);
+  todayData.habits[id] = n;
+  renderHabits();
+  saveToday();
+};
+
+window.quickAddHabit = function(emoji,name,goal,mode,unit){
+  const id = 'h_'+Date.now();
+  customHabits.push({id,emoji,name,goal,unit,type:'daily',mode});
   renderHabits();
   saveConfig();
 };
