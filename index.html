@@ -277,9 +277,13 @@ canvas{width:100%!important}
     <div class="card-title">🎯 Habits</div>
     <div id="habitsList"></div>
     <div class="habit-add">
-      <input type="text" id="newHabitName" placeholder="Habit name + emoji...">
-      <input type="number" id="newHabitGoal" placeholder="Goal" style="width:70px;text-align:center">
-      <button class="add-btn" onclick="addHabit()">+ Add</button>
+      <input type="text" id="newHabitName" placeholder="Habit + emoji...">
+      <select id="newHabitMode" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;padding:8px 4px">
+        <option value="min">Min</option>
+        <option value="max">Max</option>
+      </select>
+      <input type="number" id="newHabitGoal" placeholder="#" style="width:55px;text-align:center">
+      <button class="add-btn" onclick="addHabit()">+</button>
     </div>
   </div>
 
@@ -594,12 +598,28 @@ function renderToday(){
 
 // ── HABITS RENDER ──
 const DEFAULT_HABITS = [
-  {id:'steps',emoji:'🚶',name:'Daily Steps',goal:8000,unit:'steps',type:'daily'},
-  {id:'workouts',emoji:'🏋️',name:'Workouts',goal:3,unit:'/week',type:'weekly'}
+  {id:'steps',emoji:'🚶',name:'Daily Steps',goal:8000,unit:'steps',type:'daily',mode:'min'},
+  {id:'workouts',emoji:'🏋️',name:'Workouts',goal:3,unit:'/week',type:'weekly',mode:'min'}
 ];
 
 function getAllHabits(){
   return [...DEFAULT_HABITS, ...customHabits];
+}
+
+function isHabitMet(h, v){
+  if(!h.goal||h.goal<=0) return false;
+  if(h.mode==='max') return v<=h.goal;
+  return v>=h.goal; // min (default)
+}
+
+function habitCheckHtml(h, v){
+  const met = isHabitMet(h, v);
+  if(h.mode==='max'){
+    const over = v>h.goal;
+    if(v===0) return '<span class="habit-check" style="color:var(--p)">✅</span>';
+    return over?'<span class="habit-check" style="color:var(--red)">⚠️</span>':'<span class="habit-check" style="color:var(--p)">✅</span>';
+  }
+  return met?'<span class="habit-check" style="color:var(--p)">✅</span>':'<span class="habit-check" style="color:var(--muted)">—</span>';
 }
 
 function renderHabits(){
@@ -610,21 +630,19 @@ function renderHabits(){
   all.forEach(h=>{
     const v = vals[h.id]||0;
     const goal = h.goal||0;
-    const pct = goal>0?Math.min(v/goal*100,100):0;
-    const met = goal>0 && v>=goal;
     const isCustom = !DEFAULT_HABITS.find(d=>d.id===h.id);
-    const check = met?'<span class="habit-check" style="color:var(--p)">✅</span>':'<span class="habit-check" style="color:var(--muted)">—</span>';
+    const modeLabel = h.mode==='max'?'Max':'Min';
     const delBtn = isCustom?`<button class="habit-del" onclick="removeHabit('${h.id}')">✕</button>`:'';
     html+=`<div class="habit-row">
       <div class="habit-emoji">${h.emoji}</div>
       <div class="habit-info">
         <div class="habit-label">${h.name}</div>
-        <div class="habit-goal">Goal: ${goal.toLocaleString()} ${h.unit||''}</div>
+        <div class="habit-goal">${modeLabel}: ${goal.toLocaleString()} ${h.unit||''}</div>
       </div>
       <div class="habit-input-wrap">
         <input class="habit-val" type="number" value="${v||''}" placeholder="0"
           oninput="setHabit('${h.id}',this.value)">
-        ${check}
+        ${habitCheckHtml(h, v)}
         ${delBtn}
       </div>
     </div>`;
@@ -662,14 +680,11 @@ window.setHabit = function(id, val){
   // update check without full re-render (avoids losing focus)
   const all = getAllHabits();
   const h = all.find(x=>x.id===id);
-  if(h&&h.goal>0){
+  if(h){
     const row = document.querySelector(`input[oninput*="'${id}'"]`);
     if(row){
       const check = row.parentElement.querySelector('.habit-check');
-      if(check){
-        check.style.color = n>=h.goal?'var(--p)':'var(--muted)';
-        check.textContent = n>=h.goal?'✅':'—';
-      }
+      if(check) check.outerHTML = habitCheckHtml(h, n);
     }
   }
 };
@@ -682,14 +697,16 @@ window.saveNote = function(){
 window.addHabit = function(){
   const nameInp = document.getElementById('newHabitName');
   const goalInp = document.getElementById('newHabitGoal');
+  const modeInp = document.getElementById('newHabitMode');
   const val = nameInp.value.trim();
   if(!val) return;
   const match = val.match(/^(\p{Emoji})\s*(.+)$/u);
   const emoji = match?match[1]:'📌';
   const name = match?match[2].trim():val;
   const goal = parseFloat(goalInp.value)||1;
+  const mode = modeInp.value;
   const id = 'h_'+Date.now();
-  customHabits.push({id,emoji,name,goal,unit:'',type:'daily'});
+  customHabits.push({id,emoji,name,goal,unit:'',type:'daily',mode});
   nameInp.value='';
   goalInp.value='';
   renderHabits();
@@ -846,9 +863,11 @@ async function renderWeek(){
       const entry=db_data[dateKey(d2)];
       const v=entry?.habits?.[h.id]||0;
       weekTotal+=v;
-      const met=isWeekly?v>0:(h.goal>0&&v>=h.goal);
+      const isMax=h.mode==='max';
+      const met=isWeekly?v>0:isMax?(v<=h.goal):(h.goal>0&&v>=h.goal);
+      const over=isMax&&v>h.goal;
       const hasVal=v>0;
-      const color=met?'var(--p)':hasVal?'var(--f)':'var(--border)';
+      const color=over?'var(--red)':met&&hasVal?'var(--p)':hasVal?'var(--f)':'var(--border)';
       const display=isWeekly?(v>0?'✓':''):(v>0?v.toLocaleString():'');
       dots+=`<div style="width:24px;height:24px;border-radius:6px;background:${color};display:flex;align-items:center;justify-content:center;font-size:${isWeekly?'10':'8'}px;font-weight:700;color:${hasVal?'#000':'transparent'}">${display}</div>`;
     }
