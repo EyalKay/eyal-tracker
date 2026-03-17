@@ -122,8 +122,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .stat-lbl{font-size:11px;color:var(--muted)}
 
 /* CHART */
-.chart-wrap{position:relative;height:120px;margin:8px 0}
+.chart-wrap{position:relative;height:180px;margin:8px 0}
 canvas{width:100%!important}
+
+/* DATE NAV */
+.date-nav{display:flex;align-items:center;gap:12px}
+.date-arrow{background:none;border:1px solid var(--border);border-radius:50%;width:28px;height:28px;color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;transition:all .15s}
+.date-arrow:active{transform:scale(.9);border-color:var(--muted)}
+.date-arrow:disabled{opacity:.2;pointer-events:none}
+.weight-delta{font-size:12px;margin-top:4px}
 
 /* WEIGHT HISTORY */
 .wh-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
@@ -196,8 +203,14 @@ canvas{width:100%!important}
 <div class="page active" id="page-today">
   <div class="page-header">
     <div>
-      <div class="page-title">Today 💪</div>
-      <div class="page-sub" id="todayDate"></div>
+      <div class="date-nav">
+        <button class="date-arrow" id="datePrev" onclick="shiftDate(-1)">◀</button>
+        <div>
+          <div class="page-title" id="dayTitle">Today 💪</div>
+          <div class="page-sub" id="todayDate"></div>
+        </div>
+        <button class="date-arrow" id="dateNext" onclick="shiftDate(1)">▶</button>
+      </div>
     </div>
     <div class="sync-dot" id="syncDot" title="Sync"></div>
   </div>
@@ -211,8 +224,8 @@ canvas{width:100%!important}
       <div class="mt-target">/ 5</div>
       <div class="mt-bar"><div class="mt-bar-fill" id="b-p" style="background:var(--p);width:0%"></div></div>
       <div class="mt-btns">
-        <button class="mt-btn" ontouchstart="" onclick="chg('p',-1)">−</button>
-        <button class="mt-btn" ontouchstart="" onclick="chg('p',1)" style="border-color:var(--p)">+</button>
+        <button class="mt-btn" ontouchstart="" onclick="chg('p',-0.5)">−</button>
+        <button class="mt-btn" ontouchstart="" onclick="chg('p',0.5)" style="border-color:var(--p)">+</button>
       </div>
     </div>
     <div class="macro-tile" id="tile-c" style="color:var(--c)">
@@ -222,8 +235,8 @@ canvas{width:100%!important}
       <div class="mt-target">/ 3</div>
       <div class="mt-bar"><div class="mt-bar-fill" id="b-c" style="background:var(--c);width:0%"></div></div>
       <div class="mt-btns">
-        <button class="mt-btn" ontouchstart="" onclick="chg('c',-1)">−</button>
-        <button class="mt-btn" ontouchstart="" onclick="chg('c',1)" style="border-color:var(--c)">+</button>
+        <button class="mt-btn" ontouchstart="" onclick="chg('c',-0.5)">−</button>
+        <button class="mt-btn" ontouchstart="" onclick="chg('c',0.5)" style="border-color:var(--c)">+</button>
       </div>
     </div>
     <div class="macro-tile" id="tile-f" style="color:var(--f)">
@@ -233,8 +246,8 @@ canvas{width:100%!important}
       <div class="mt-target">/ 2</div>
       <div class="mt-bar"><div class="mt-bar-fill" id="b-f" style="background:var(--f);width:0%"></div></div>
       <div class="mt-btns">
-        <button class="mt-btn" ontouchstart="" onclick="chg('f',-1)">−</button>
-        <button class="mt-btn" ontouchstart="" onclick="chg('f',1)" style="border-color:var(--f)">+</button>
+        <button class="mt-btn" ontouchstart="" onclick="chg('f',-0.5)">−</button>
+        <button class="mt-btn" ontouchstart="" onclick="chg('f',0.5)" style="border-color:var(--f)">+</button>
       </div>
     </div>
   </div>
@@ -253,6 +266,7 @@ canvas{width:100%!important}
       <button class="w-btn" ontouchstart="" onclick="chgWeight(0.1)" style="border-color:var(--c)">+</button>
       <div class="w-unit">kg</div>
     </div>
+    <div class="weight-delta" id="weightDelta"></div>
   </div>
 
   <!-- TRIGGERS -->
@@ -508,6 +522,7 @@ let customHabits = [];
 let goalWeight = null;
 let startingWeight = 87;
 let isSaving = false;
+let selectedDate = new Date(); // the date being viewed/edited
 
 // ── SYNC ──
 function setSyncState(s){
@@ -526,8 +541,10 @@ async function loadToday(){
       if(cfg.goal) goalWeight = cfg.goal;
       if(cfg.startWeight) startingWeight = cfg.startWeight;
     }
-    // load today
-    const snap = await getDoc(doc(db, USER, todayKey()));
+    // load selected date
+    const key = dateKey(selectedDate);
+    todayData = {p:0,c:0,f:0,weight:null,triggers:{},habits:{},note:''};
+    const snap = await getDoc(doc(db, USER, key));
     if(snap.exists()) todayData = {...todayData, ...snap.data()};
     setSyncState('synced');
   }catch(e){
@@ -543,7 +560,7 @@ async function saveToday(){
   isSaving = true;
   setSyncState('syncing');
   try{
-    await setDoc(doc(db, USER, todayKey()), todayData);
+    await setDoc(doc(db, USER, dateKey(selectedDate)), todayData);
     setSyncState('synced');
   }catch(e){
     setSyncState('');
@@ -558,15 +575,27 @@ async function saveConfig(){
 }
 
 // ── RENDER TODAY ──
+function formatVal(v){
+  return v % 1 === 0 ? v.toString() : v.toFixed(1);
+}
+
+function isToday(d){
+  const t = new Date();
+  return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate();
+}
+
 function renderToday(){
-  const now = new Date();
+  const sel = selectedDate;
+  const selIsToday = isToday(sel);
+  document.getElementById('dayTitle').textContent = selIsToday ? 'Today 💪' : `${EN_DAYS[sel.getDay()]} 📝`;
   document.getElementById('todayDate').textContent =
-    `${EN_DAYS[now.getDay()]}, ${now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
+    sel.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  document.getElementById('dateNext').disabled = selIsToday;
 
   ['p','c','f'].forEach(m=>{
     const v = todayData[m]||0;
     const t = TARGETS[m];
-    document.getElementById('v-'+m).textContent = v;
+    document.getElementById('v-'+m).textContent = formatVal(v);
     document.getElementById('b-'+m).style.width = Math.min(v/t*100,100)+'%';
     document.getElementById('tile-'+m).classList.toggle('done', v>=t);
   });
@@ -586,6 +615,10 @@ function renderToday(){
   else{ bar.classList.add('warn'); icon.textContent='🎯'; txt.textContent=`${cal} cal | ~${TARGET_CAL-cal} remaining`; }
 
   if(todayData.weight) document.getElementById('weightIn').value = todayData.weight;
+  else document.getElementById('weightIn').value = '';
+
+  // weight delta from previous day
+  loadWeightDelta();
 
   // triggers
   ['snacking','kitchen'].forEach(t=>{
@@ -596,7 +629,7 @@ function renderToday(){
     document.getElementById(px+'-n').className = 'trig-btn' + (v===false?' no':'');
   });
 
-  if(todayData.note) document.getElementById('noteInput').value = todayData.note;
+  document.getElementById('noteInput').value = todayData.note || '';
 }
 
 // ── HABITS RENDER ──
@@ -677,9 +710,47 @@ function renderHabits(){
   }
 }
 
+// ── DATE NAV ──
+window.shiftDate = async function(dir){
+  const d = new Date(selectedDate);
+  d.setDate(d.getDate() + dir);
+  // don't go past today
+  if(d > new Date()) return;
+  selectedDate = d;
+  todayData = {p:0,c:0,f:0,weight:null,triggers:{},habits:{},note:''};
+  document.getElementById('weightIn').value = '';
+  document.getElementById('noteInput').value = '';
+  setSyncState('syncing');
+  try{
+    const snap = await getDoc(doc(db, USER, dateKey(selectedDate)));
+    if(snap.exists()) todayData = {...todayData, ...snap.data()};
+    setSyncState('synced');
+  }catch(e){ setSyncState(''); }
+  renderToday();
+  renderHabits();
+};
+
+async function loadWeightDelta(){
+  const el = document.getElementById('weightDelta');
+  if(!todayData.weight){ el.innerHTML = ''; return; }
+  try{
+    const prev = new Date(selectedDate);
+    prev.setDate(prev.getDate()-1);
+    const snap = await getDoc(doc(db, USER, dateKey(prev)));
+    if(snap.exists() && snap.data().weight){
+      const delta = todayData.weight - snap.data().weight;
+      const sign = delta > 0 ? '+' : '';
+      const cls = delta <= 0 ? 'down' : 'up';
+      el.innerHTML = `<span class="delta ${cls}">${sign}${delta.toFixed(1)} kg from yesterday</span>`;
+    } else {
+      el.innerHTML = '';
+    }
+  }catch(e){ el.innerHTML = ''; }
+}
+
 // ── ACTIONS ──
 window.chg = function(m, d){
-  todayData[m] = Math.max(0, Math.min((todayData[m]||0)+d, TARGETS[m]+3));
+  todayData[m] = Math.max(0, Math.min(Math.round(((todayData[m]||0)+d)*10)/10, TARGETS[m]+3));
   renderToday();
   saveToday();
   const el = document.getElementById('v-'+m);
@@ -888,7 +959,7 @@ async function renderWeek(){
   const chartLabels=[];
   const chartData=[];
   let prevW=null;
-  for(let i=6;i>=0;i--){
+  for(let i=0;i<=6;i++){
     const d=new Date(today); d.setDate(today.getDate()-dow+i);
     const key=dateKey(d);
     const entry=db_data[key];
@@ -1025,28 +1096,47 @@ function drawChart(canvasId, labels, data, color){
   ctx.clearRect(0,0,W,H);
   if(data.length<2) return;
   const mn=Math.min(...data)-0.5, mx=Math.max(...data)+0.5;
-  const xStep=W/(data.length-1);
-  const yScale=(H-20)/(mx-mn);
+  const padLeft=32, padRight=8, padTop=18, padBot=18;
+  const plotW=W-padLeft-padRight, plotH=H-padTop-padBot;
+  const xStep=plotW/(data.length-1);
+  const yScale=plotH/(mx-mn);
+
+  // grid lines + Y-axis labels
   ctx.strokeStyle='#2a2a2a';ctx.lineWidth=1;
+  ctx.fillStyle='#5a5a60';ctx.font='9px Inter';ctx.textAlign='right';
   for(let i=0;i<=4;i++){
-    const y=10+(mx-mn-i*(mx-mn)/4)*yScale;
-    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+    const val=mn+i*(mx-mn)/4;
+    const y=padTop+(mx-val)*yScale;
+    ctx.beginPath();ctx.moveTo(padLeft,y);ctx.lineTo(W-padRight,y);ctx.stroke();
+    ctx.fillText(val.toFixed(1),padLeft-4,y+3);
   }
+
+  // line
   ctx.beginPath();
   data.forEach((v,i)=>{
-    const x=i*xStep, y=10+(mx-v)*yScale;
+    const x=padLeft+i*xStep, y=padTop+(mx-v)*yScale;
     i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
   });
-  ctx.strokeStyle=color;ctx.lineWidth=2;ctx.lineJoin='round';ctx.stroke();
-  ctx.lineTo((data.length-1)*xStep,H);ctx.lineTo(0,H);ctx.closePath();
+  ctx.strokeStyle=color;ctx.lineWidth=3;ctx.lineJoin='round';ctx.lineCap='round';ctx.stroke();
+
+  // fill under
+  ctx.lineTo(padLeft+(data.length-1)*xStep,padTop+plotH);ctx.lineTo(padLeft,padTop+plotH);ctx.closePath();
   ctx.fillStyle=color+'22';ctx.fill();
+
+  // dots + value labels
   data.forEach((v,i)=>{
-    const x=i*xStep, y=10+(mx-v)*yScale;
-    ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);
+    const x=padLeft+i*xStep, y=padTop+(mx-v)*yScale;
+    ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);
     ctx.fillStyle=color;ctx.fill();
+    ctx.strokeStyle='#0a0a0a';ctx.lineWidth=2;ctx.stroke();
+    // value above dot
+    ctx.fillStyle='#f0f0f2';ctx.font='bold 10px Inter';ctx.textAlign='center';
+    ctx.fillText(v.toFixed(1),x,y-10);
   });
-  ctx.fillStyle='#5a5a60';ctx.font='9px Inter';ctx.textAlign='center';
-  labels.forEach((l,i)=>ctx.fillText(l,i*xStep,H-2));
+
+  // X-axis labels
+  ctx.fillStyle='#5a5a60';ctx.font='10px Inter';ctx.textAlign='center';
+  labels.forEach((l,i)=>ctx.fillText(l,padLeft+i*xStep,H-2));
 }
 
 // ── UTILS ──
