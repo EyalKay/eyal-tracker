@@ -602,7 +602,7 @@ function renderToday(){
 
   const cal = (todayData.p||0)*CAL.p + (todayData.c||0)*CAL.c + (todayData.f||0)*CAL.f;
   const done = (todayData.p||0)>=TARGETS.p && (todayData.c||0)>=TARGETS.c && (todayData.f||0)>=TARGETS.f;
-  const over = (todayData.p||0)>TARGETS.p || (todayData.c||0)>TARGETS.c || (todayData.f||0)>TARGETS.f;
+  const over = cal > TARGET_CAL;
   const total = (todayData.p||0)+(todayData.c||0)+(todayData.f||0);
 
   const bar = document.getElementById('statusBar');
@@ -612,7 +612,7 @@ function renderToday(){
   if(!total){ bar.classList.add('empty'); icon.textContent='📋'; txt.textContent='Start logging meals'; }
   else if(over){ bar.classList.add('over'); icon.textContent='⚠️'; txt.textContent=`Over target — ${cal} cal`; }
   else if(done){ bar.classList.add('ok'); icon.textContent='✅'; txt.textContent=`Target reached! ~${cal} cal`; }
-  else{ bar.classList.add('warn'); icon.textContent='🎯'; txt.textContent=`${cal} cal | ~${TARGET_CAL-cal} remaining`; }
+  else{ bar.classList.add('ok'); icon.textContent='✅'; txt.textContent=`In spec — ${cal}/${TARGET_CAL} cal`; }
 
   if(todayData.weight) document.getElementById('weightIn').value = todayData.weight;
   else document.getElementById('weightIn').value = '';
