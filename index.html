@@ -600,8 +600,12 @@ function renderToday(){
     document.getElementById('tile-'+m).classList.toggle('done', v>=t);
   });
 
-  const cal = (todayData.p||0)*CAL.p + (todayData.c||0)*CAL.c + (todayData.f||0)*CAL.f;
-  const done = (todayData.p||0)>=TARGETS.p && (todayData.c||0)>=TARGETS.c && (todayData.f||0)>=TARGETS.f;
+  // coffee penalty: +0.5 carb per coffee over 2
+  const coffeeVal = todayData.habits?.coffee||0;
+  const coffeePenalty = Math.max(0, coffeeVal - 2) * 0.5;
+  const effectiveC = (todayData.c||0) + coffeePenalty;
+  const cal = (todayData.p||0)*CAL.p + effectiveC*CAL.c + (todayData.f||0)*CAL.f;
+  const done = (todayData.p||0)>=TARGETS.p && effectiveC>=TARGETS.c && (todayData.f||0)>=TARGETS.f;
   const over = cal > TARGET_CAL;
   const total = (todayData.p||0)+(todayData.c||0)+(todayData.f||0);
 
@@ -609,10 +613,11 @@ function renderToday(){
   const icon = document.getElementById('statusIcon');
   const txt = document.getElementById('statusText');
   bar.className = 'status-bar';
+  const penaltyNote = coffeePenalty ? ` (+${coffeePenalty}C ☕)` : '';
   if(!total){ bar.classList.add('empty'); icon.textContent='📋'; txt.textContent='Start logging meals'; }
-  else if(over){ bar.classList.add('over'); icon.textContent='⚠️'; txt.textContent=`Over target — ${cal} cal`; }
-  else if(done){ bar.classList.add('ok'); icon.textContent='✅'; txt.textContent=`Target reached! ~${cal} cal`; }
-  else{ bar.classList.add('ok'); icon.textContent='✅'; txt.textContent=`In spec — ${cal}/${TARGET_CAL} cal`; }
+  else if(over){ bar.classList.add('over'); icon.textContent='⚠️'; txt.textContent=`Over target — ${cal} cal${penaltyNote}`; }
+  else if(done){ bar.classList.add('ok'); icon.textContent='✅'; txt.textContent=`Target reached! ~${cal} cal${penaltyNote}`; }
+  else{ bar.classList.add('ok'); icon.textContent='✅'; txt.textContent=`In spec — ${cal}/${TARGET_CAL} cal${penaltyNote}`; }
 
   if(todayData.weight) document.getElementById('weightIn').value = todayData.weight;
   else document.getElementById('weightIn').value = '';
