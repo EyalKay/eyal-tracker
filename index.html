@@ -620,7 +620,7 @@ function renderToday(){
   else{ bar.classList.add('ok'); icon.textContent='✅'; txt.textContent=`In spec — ${cal}/${TARGET_CAL} cal${penaltyNote}`; }
 
   if(todayData.weight) document.getElementById('weightIn').value = todayData.weight;
-  else document.getElementById('weightIn').value = '';
+  else prefillWeight();
 
   // weight delta from previous day
   loadWeightDelta();
@@ -734,6 +734,26 @@ window.shiftDate = async function(dir){
   renderToday();
   renderHabits();
 };
+
+async function prefillWeight(){
+  const inp = document.getElementById('weightIn');
+  inp.value = '';
+  try{
+    // search back up to 7 days for the most recent weight
+    for(let i=1;i<=7;i++){
+      const prev = new Date(selectedDate);
+      prev.setDate(prev.getDate()-i);
+      const snap = await getDoc(doc(db, USER, dateKey(prev)));
+      if(snap.exists() && snap.data().weight){
+        inp.value = snap.data().weight;
+        todayData.weight = snap.data().weight;
+        saveToday();
+        loadWeightDelta();
+        return;
+      }
+    }
+  }catch(e){}
+}
 
 async function loadWeightDelta(){
   const el = document.getElementById('weightDelta');
