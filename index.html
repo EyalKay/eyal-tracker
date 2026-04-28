@@ -925,7 +925,16 @@ window.resetToday = async function(){
 
 window.resetAll = async function(){
   if(!confirm('Delete all data, habits, and goals?\nThis cannot be undone!')) return;
-  if(!confirm('Are you sure? All history will be permanently deleted.')) return;
+  const user = auth.currentUser;
+  if(!user){ alert('Not signed in.'); return; }
+  try{
+    await reauthenticateWithPopup(user, googleProvider);
+  }catch(e){
+    if(e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
+    console.error(e);
+    alert('Re-authentication failed. Reset cancelled.');
+    return;
+  }
   setSyncState('syncing');
   try{
     const snap = await getDocs(collection(db, USER));
