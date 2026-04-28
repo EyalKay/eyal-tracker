@@ -399,6 +399,10 @@ canvas{width:100%!important}
       <div class="stat-val" id="wTrigOk" style="color:var(--purple)">0%</div>
       <div class="stat-lbl">Triggers ✓</div>
     </div>
+    <div class="stat-tile" style="grid-column:1/-1">
+      <div class="stat-val" id="wAvgSteps" style="color:var(--f)">—</div>
+      <div class="stat-lbl">🚶 Avg Steps / Day</div>
+    </div>
   </div>
 
   <!-- WEIGHT CHART -->
@@ -465,7 +469,7 @@ canvas{width:100%!important}
   <!-- 30 DAY CHART -->
   <div class="card">
     <div class="card-title">📈 Weight Trend — 30 Days</div>
-    <div class="chart-wrap" style="height:140px"><canvas id="statsChart"></canvas></div>
+    <div class="chart-wrap" style="height:220px"><canvas id="statsChart"></canvas></div>
   </div>
 
   <!-- HISTORY -->
@@ -983,6 +987,16 @@ async function renderWeek(){
   });
   document.getElementById('wTrigOk').textContent=trigTotal?Math.round(trigOk/trigTotal*100)+'%':'—';
 
+  // avg steps this week
+  let stepTotal=0,stepDays=0;
+  for(let i=0;i<=6;i++){
+    const d=new Date(today); d.setDate(today.getDate()-dow+i);
+    const entry=db_data[dateKey(d)];
+    const s=entry?.habits?.steps||0;
+    if(s>0){stepTotal+=s;stepDays++;}
+  }
+  document.getElementById('wAvgSteps').textContent=stepDays?Math.round(stepTotal/stepDays).toLocaleString():'—';
+
   const monthName=today.toLocaleDateString('en-US',{month:'long'});
   document.getElementById('weekSub').textContent=`Week ${Math.ceil(today.getDate()/7)} | ${monthName}`;
 
@@ -1075,7 +1089,7 @@ async function renderStats(){
     document.getElementById('sWeightDelta').style.color=d<=0?'var(--p)':'var(--red)';
   }
 
-  drawChart('statsChart',chartL.slice(-20),chartD.slice(-20),'#b5e853');
+  drawChart('statsChart',chartL,chartD,'#b5e853');
 
   if(goalWeight){
     document.getElementById('goalInput').value=goalWeight;
@@ -1154,20 +1168,28 @@ function drawChart(canvasId, labels, data, color){
   ctx.lineTo(padLeft+(data.length-1)*xStep,padTop+plotH);ctx.lineTo(padLeft,padTop+plotH);ctx.closePath();
   ctx.fillStyle=color+'22';ctx.fill();
 
-  // dots + value labels
+  // dots + value labels (adapt size for many data points)
+  const many=data.length>14;
+  const dotR=many?3:5;
+  const showEvery=many?Math.ceil(data.length/10):1;
   data.forEach((v,i)=>{
     const x=padLeft+i*xStep, y=padTop+(mx-v)*yScale;
-    ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);
+    ctx.beginPath();ctx.arc(x,y,dotR,0,Math.PI*2);
     ctx.fillStyle=color;ctx.fill();
-    ctx.strokeStyle='#0a0a0a';ctx.lineWidth=2;ctx.stroke();
-    // value above dot
-    ctx.fillStyle='#f0f0f2';ctx.font='bold 10px Inter';ctx.textAlign='center';
-    ctx.fillText(v.toFixed(1),x,y-10);
+    ctx.strokeStyle='#0a0a0a';ctx.lineWidth=many?1:2;ctx.stroke();
+    // value above dot — skip some when crowded
+    if(i%showEvery===0||i===data.length-1){
+      ctx.fillStyle='#f0f0f2';ctx.font=`bold ${many?8:10}px Inter`;ctx.textAlign='center';
+      ctx.fillText(v.toFixed(1),x,y-8);
+    }
   });
 
-  // X-axis labels
-  ctx.fillStyle='#5a5a60';ctx.font='10px Inter';ctx.textAlign='center';
-  labels.forEach((l,i)=>ctx.fillText(l,padLeft+i*xStep,H-2));
+  // X-axis labels — skip some when crowded
+  const lblEvery=many?Math.ceil(data.length/8):1;
+  ctx.fillStyle='#5a5a60';ctx.font=`${many?8:10}px Inter`;ctx.textAlign='center';
+  labels.forEach((l,i)=>{
+    if(i%lblEvery===0||i===data.length-1) ctx.fillText(l,padLeft+i*xStep,H-2);
+  });
 }
 
 // ── UTILS ──
