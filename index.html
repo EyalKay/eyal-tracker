@@ -1237,8 +1237,53 @@ function calcStreak(data){
   return s;
 }
 
-// ── INIT ──
-loadToday();
+// ── AUTH ──
+const authScreen = document.getElementById('authScreen');
+const authError = document.getElementById('authError');
+
+function showAuthScreen(message){
+  document.body.classList.add('auth-locked');
+  authScreen.classList.add('active');
+  authError.textContent = message || '';
+}
+function hideAuthScreen(){
+  document.body.classList.remove('auth-locked');
+  authScreen.classList.remove('active');
+  authError.textContent = '';
+}
+
+window.doSignIn = async function(){
+  authError.textContent = '';
+  try{
+    await signInWithPopup(auth, googleProvider);
+  }catch(e){
+    if(e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
+    authError.textContent = 'Sign-in failed. Try again.';
+    console.error(e);
+  }
+};
+
+window.doSignOut = async function(){
+  try{ await signOut(auth); }catch(e){ console.error(e); }
+};
+
+let appInitialized = false;
+onAuthStateChanged(auth, async (user) => {
+  if(!user){
+    showAuthScreen();
+    return;
+  }
+  if(user.email !== ALLOWED_EMAIL){
+    await signOut(auth);
+    showAuthScreen('Not authorized: ' + user.email);
+    return;
+  }
+  hideAuthScreen();
+  if(!appInitialized){
+    appInitialized = true;
+    loadToday();
+  }
+});
 </script>
 </body>
 </html>
