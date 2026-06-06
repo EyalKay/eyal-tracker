@@ -605,7 +605,14 @@ async function saveToday(){
   isSaving = false;
 }
 
+// Firestore eyal/config schema (single source of truth — write only via saveConfig):
+//   habits:        Array<custom habit configs>
+//   goal:          number | null                 (target weight kg)
+//   startWeight:   number                        (starting weight kg, default 87)
+//   mealTemplates: Array<{id, name, p, c, f}>    (added 2026-06-06)
+//   tdee:          {height, age, sex, activity} | null  (added 2026-06-06)
 async function saveConfig(){
+  setSyncState('syncing');
   try{
     await setDoc(doc(db, USER, 'config'), {
       habits: customHabits,
@@ -614,7 +621,11 @@ async function saveConfig(){
       mealTemplates: mealTemplates,
       tdee: tdeeProfile
     });
-  }catch(e){}
+    setSyncState('synced');
+  }catch(e){
+    console.error('saveConfig failed', e);
+    setSyncState('');
+  }
 }
 
 // ── RENDER TODAY ──
