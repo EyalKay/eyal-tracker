@@ -679,12 +679,18 @@ function deleteTemplate(id){
   if(typeof renderTemplateChips === 'function') renderTemplateChips();
 }
 
+const _tplNameSaveTimers = {};
 function editTemplateName(id, name){
   const t = mealTemplates.find(x => x.id === id);
   if(!t) return;
   t.name = (name||'').slice(0, 30);
-  saveConfig();
   if(typeof renderTemplateChips === 'function') renderTemplateChips();
+  // Debounce the Firestore write — coalesce rapid keystrokes
+  if(_tplNameSaveTimers[id]) clearTimeout(_tplNameSaveTimers[id]);
+  _tplNameSaveTimers[id] = setTimeout(() => {
+    delete _tplNameSaveTimers[id];
+    saveConfig();
+  }, 500);
 }
 
 function editTemplateMacro(id, macro, delta){
@@ -692,8 +698,16 @@ function editTemplateMacro(id, macro, delta){
   if(!t) return;
   const next = Math.max(0, Math.min(10, Math.round(((t[macro]||0) + delta) * 10) / 10));
   t[macro] = next;
+  // Update the .tpl-val span in place to avoid blowing away input focus
+  const row = document.querySelector('.tpl-row[data-id="' + id + '"]');
+  if(row){
+    const macroDiv = row.querySelectorAll('.tpl-macro')[ {p:0, c:1, f:2}[macro] ];
+    if(macroDiv){
+      const val = macroDiv.querySelector('.tpl-val');
+      if(val) val.textContent = formatVal(next);
+    }
+  }
   saveConfig();
-  renderTemplatesUI();
   if(typeof renderTemplateChips === 'function') renderTemplateChips();
 }
 
