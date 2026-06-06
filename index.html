@@ -554,6 +554,8 @@ let todayData = {p:0,c:0,f:0,weight:null,triggers:{},habits:{},note:''};
 let customHabits = [];
 let goalWeight = null;
 let startingWeight = 87;
+let mealTemplates = [];
+let tdeeProfile = null; // {height, age, sex, activity} or null when unset
 let isSaving = false;
 let selectedDate = new Date(); // the date being viewed/edited
 
@@ -566,13 +568,15 @@ function setSyncState(s){
 async function loadToday(){
   setSyncState('syncing');
   try{
-    // load habits config
+    // load config (habits, goal, startWeight, mealTemplates, tdeeProfile)
     const hSnap = await getDoc(doc(db, USER, 'config'));
     if(hSnap.exists()){
       const cfg = hSnap.data();
       if(cfg.habits) customHabits = cfg.habits;
       if(cfg.goal) goalWeight = cfg.goal;
       if(cfg.startWeight) startingWeight = cfg.startWeight;
+      if(Array.isArray(cfg.mealTemplates)) mealTemplates = cfg.mealTemplates;
+      if(cfg.tdee && typeof cfg.tdee === 'object') tdeeProfile = cfg.tdee;
     }
     // load selected date
     const key = dateKey(selectedDate);
@@ -603,7 +607,13 @@ async function saveToday(){
 
 async function saveConfig(){
   try{
-    await setDoc(doc(db, USER, 'config'), {habits: customHabits, goal: goalWeight||null, startWeight: startingWeight});
+    await setDoc(doc(db, USER, 'config'), {
+      habits: customHabits,
+      goal: goalWeight||null,
+      startWeight: startingWeight,
+      mealTemplates: mealTemplates,
+      tdee: tdeeProfile
+    });
   }catch(e){}
 }
 
@@ -944,6 +954,8 @@ window.resetAll = async function(){
     customHabits = [];
     goalWeight = null;
     startingWeight = 87;
+    mealTemplates = [];
+    tdeeProfile = null;
     await saveConfig();
     todayData = {p:0,c:0,f:0,weight:null,triggers:{},habits:{},note:''};
     document.getElementById('weightIn').value='';
