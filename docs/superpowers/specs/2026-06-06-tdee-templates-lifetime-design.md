@@ -39,12 +39,12 @@ This spec adds three features in one bundle: lifetime data view, editable meal t
 Three buttons at the top of the Stats page: **30d** (default) / **90d** / **All**. Clicking re-runs the existing stats computations against the selected range.
 
 ### Affected computations on Stats page
-All of the following recompute when range changes:
-- Weakest trigger
-- Average steps
-- Weight trend (first → last in range)
+All Stats tiles recompute when range changes:
+- Success Days / N (tile label updates with range)
 - Best streak in range
-- Weight chart points
+- Weakest trigger
+- Weight delta (first → last in range; tile label adapts: "Monthly" / "90d" / "Lifetime")
+- Weight chart points + title
 
 ### All-time summary card
 A new card pinned to the top of the Stats page, **always shown regardless of range**:
