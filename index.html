@@ -224,6 +224,13 @@ body.auth-locked .bottom-nav,body.auth-locked .page{display:none !important}
 .tpl-add-btn{background:var(--card2);border:1px dashed var(--border);color:var(--p);padding:12px;border-radius:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;width:100%}
 .tpl-add-btn:hover{border-color:var(--p)}
 .tpl-empty{color:var(--muted);font-size:13px;text-align:center;padding:16px}
+.tpl-chip-row{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;margin-bottom:8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.tpl-chip-row::-webkit-scrollbar{display:none}
+.tpl-chip{flex:none;background:var(--card2);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:12px;font-weight:700;padding:8px 14px;border-radius:999px;cursor:pointer;scroll-snap-align:start;white-space:nowrap}
+.tpl-chip:active{transform:scale(0.96)}
+.tpl-chip .tpl-chip-macro{font-size:10px;color:var(--muted);font-weight:500;margin-left:4px}
+.tpl-chip-empty{color:var(--muted);font-size:12px;padding:8px 4px;cursor:pointer}
+.tpl-chip-empty:hover{color:var(--text)}
 </style>
 </head>
 <body>
@@ -292,6 +299,9 @@ body.auth-locked .bottom-nav,body.auth-locked .page{display:none !important}
       </div>
     </div>
   </div>
+
+  <!-- MEAL TEMPLATE CHIPS -->
+  <div id="tplChips" class="tpl-chip-row"></div>
 
   <div class="status-bar empty" id="statusBar">
     <span id="statusIcon">📋</span><span id="statusText">Start logging meals</span>
@@ -624,6 +634,7 @@ async function loadToday(){
   }
   renderToday();
   renderHabits();
+  renderTemplateChips();
 }
 
 async function saveToday(){
@@ -964,6 +975,43 @@ window.saveWeight = function(){
   const v = parseFloat(document.getElementById('weightIn').value);
   todayData.weight = isNaN(v)?null:v;
   saveToday();
+};
+
+function renderTemplateChips(){
+  const root = document.getElementById('tplChips');
+  if(!root) return;
+  if(!mealTemplates.length){
+    root.innerHTML = '<div class="tpl-chip-empty" onclick="goPage(\'settings\',null)">+ Add meal templates in Settings →</div>';
+    return;
+  }
+  root.innerHTML = mealTemplates.map(t => {
+    const parts = [];
+    if(t.p) parts.push(`<span style="color:var(--p)">${formatVal(t.p)}P</span>`);
+    if(t.c) parts.push(`<span style="color:var(--c)">${formatVal(t.c)}C</span>`);
+    if(t.f) parts.push(`<span style="color:var(--f)">${formatVal(t.f)}F</span>`);
+    const macros = parts.length ? `<span class="tpl-chip-macro">${parts.join(' · ')}</span>` : '';
+    const name = (t.name||'(unnamed)').replace(/</g,'&lt;');
+    return `<button class="tpl-chip" onclick="applyTemplate('${t.id}')">${name}${macros}</button>`;
+  }).join('');
+}
+
+window.applyTemplate = function(id){
+  const t = mealTemplates.find(x => x.id === id);
+  if(!t) return;
+  ['p','c','f'].forEach(m => {
+    const add = t[m] || 0;
+    if(!add) return;
+    const cap = TARGETS[m] + 3;
+    todayData[m] = Math.max(0, Math.min(Math.round(((todayData[m]||0) + add) * 10) / 10, cap));
+  });
+  renderToday();
+  saveToday();
+  ['p','c','f'].forEach(m => {
+    if(t[m]){
+      const el = document.getElementById('v-'+m);
+      el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+    }
+  });
 };
 
 window.chgWeight = function(d){
