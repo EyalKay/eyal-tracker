@@ -125,6 +125,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .stat-tile{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
 .stat-val{font-size:32px;font-weight:900;line-height:1;margin-bottom:4px}
 .stat-lbl{font-size:11px;color:var(--muted)}
+.range-toggle{display:flex;gap:6px;margin:0 0 12px}
+.range-toggle button{flex:1;background:var(--card2);border:1px solid var(--border);color:var(--muted);padding:8px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.range-toggle button.active{background:var(--p);border-color:var(--p);color:#000}
 
 /* CHART */
 .chart-wrap{position:relative;height:180px;margin:8px 0}
@@ -494,8 +497,14 @@ body.auth-locked .bottom-nav,body.auth-locked .page{display:none !important}
   <div class="page-header">
     <div>
       <div class="page-title">Statistics 🧠</div>
-      <div class="page-sub">Last 30 days</div>
+      <div class="page-sub" id="statsRangeLabel">Last 30 days</div>
     </div>
+  </div>
+
+  <div class="range-toggle" id="statsRangeToggle">
+    <button class="active" data-range="30" onclick="setStatsRange(30)">30d</button>
+    <button data-range="90" onclick="setStatsRange(90)">90d</button>
+    <button data-range="all" onclick="setStatsRange('all')">All</button>
   </div>
 
   <!-- GOAL -->
@@ -533,7 +542,7 @@ body.auth-locked .bottom-nav,body.auth-locked .page{display:none !important}
 
   <!-- 30 DAY CHART -->
   <div class="card">
-    <div class="card-title">📈 Weight Trend — 30 Days</div>
+    <div class="card-title" id="statsChartTitle">📈 Weight Trend — 30 Days</div>
     <div class="chart-wrap" style="height:220px"><canvas id="statsChart"></canvas></div>
   </div>
 
@@ -1312,6 +1321,15 @@ window.goPage = function(name, btn){
   window.scrollTo(0,0);
 };
 
+window.setStatsRange = function(r){
+  statsRange = (r === 'all') ? 'all' : parseInt(r);
+  document.querySelectorAll('#statsRangeToggle button').forEach(b=>{
+    const v = b.dataset.range;
+    b.classList.toggle('active', (v === 'all' && statsRange === 'all') || (parseInt(v) === statsRange));
+  });
+  renderStats();
+};
+
 function renderSettings(){
   _recentWeightCache = undefined; // re-fetch on each visit
   renderTemplatesUI();
@@ -1329,6 +1347,24 @@ async function loadAllDays(days=30){
   }
   await Promise.all(promises);
   return result;
+}
+
+async function loadAllRange(range){
+  // range: number of days (e.g. 30, 90) OR 'all'
+  if(range === 'all'){
+    const result = {};
+    try{
+      const snap = await getDocs(collection(db, USER));
+      snap.forEach(docSnap => {
+        if(docSnap.id === 'config') return;
+        if(/^\d{4}-\d{2}-\d{2}$/.test(docSnap.id)){
+          result[docSnap.id] = docSnap.data();
+        }
+      });
+    }catch(e){ console.error('loadAllRange all failed', e); }
+    return result;
+  }
+  return loadAllDays(range);
 }
 
 // ── WEEK ──
@@ -1430,9 +1466,21 @@ async function renderWeek(){
 }
 
 // ── STATS ──
+let statsRange = 30; // 30 | 90 | 'all'
+
 async function renderStats(){
-  const data=await loadAllDays(30);
+  const range = statsRange;
+  const data = await loadAllRange(range);
   const entries=Object.entries(data).sort((a,b)=>a[0]>b[0]?1:-1);
+  const rangeLabel = range === 'all' ? 'All time' : `Last ${range} days`;
+  const chartLabel = range === 'all' ? 'All time' : `${range} Days`;
+  document.getElementById('statsRangeLabel').textContent = rangeLabel;
+  document.getElementById('statsChartTitle').textContent = `📈 Weight Trend — ${chartLabel}`;
+  // Adapt Stats tile labels to the chosen range
+  const sLabel = document.querySelector('#s30days')?.parentElement?.querySelector('.stat-lbl');
+  if(sLabel) sLabel.textContent = `Success Days / ${range === 'all' ? entries.filter(([_,e])=>!!e).length : range}`;
+  const wLabel = document.querySelector('#sWeightDelta')?.parentElement?.querySelector('.stat-lbl');
+  if(wLabel) wLabel.textContent = range === 'all' ? 'Lifetime Weight Change' : (range === 30 ? 'Monthly Weight Change' : `${range}d Weight Change`);
 
   let success=0,bestStreak=0,curStreak=0;
   const trigCounts={snacking:[0,0],kitchen:[0,0]};
