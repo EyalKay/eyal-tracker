@@ -657,6 +657,7 @@ async function saveToday(){
   try{
     await setDoc(doc(db, USER, dateKey(selectedDate)), todayData);
     setSyncState('synced');
+    _recentWeightCache = undefined; // weight may have changed
   }catch(e){
     setSyncState('');
   }
@@ -789,19 +790,28 @@ function ensureTdee(){
   if(!tdeeProfile) tdeeProfile = { height:175, age:35, sex:'M', activity:'moderate' };
 }
 
+let _tdeeSaveTimer = null;
 function setTdeeField(field, value){
   ensureTdee();
   if(field === 'height') tdeeProfile.height = Math.max(100, Math.min(250, parseInt(value)||0));
   else if(field === 'age') tdeeProfile.age = Math.max(10, Math.min(100, parseInt(value)||0));
   else if(field === 'sex') tdeeProfile.sex = (value === 'F') ? 'F' : 'M';
   else if(field === 'activity') tdeeProfile.activity = value;
-  saveConfig();
+  // Debounce saves on the typing fields; immediate save for sex/activity
+  if(field === 'height' || field === 'age'){
+    if(_tdeeSaveTimer) clearTimeout(_tdeeSaveTimer);
+    _tdeeSaveTimer = setTimeout(() => { _tdeeSaveTimer = null; saveConfig(); }, 500);
+  } else {
+    if(_tdeeSaveTimer){ clearTimeout(_tdeeSaveTimer); _tdeeSaveTimer = null; }
+    saveConfig();
+  }
   renderTdeeUI();
 }
 window.setTdeeField = setTdeeField;
 
+let _recentWeightCache = undefined; // undefined = not yet fetched
 async function mostRecentWeight(){
-  // Walk back up to 60 days from today looking for the latest logged weight
+  if(_recentWeightCache !== undefined) return _recentWeightCache;
   for(let i=0; i<60; i++){
     const d = new Date(); d.setDate(d.getDate()-i);
     const key = dateKey(d);
@@ -809,10 +819,14 @@ async function mostRecentWeight(){
       const snap = await getDoc(doc(db, USER, key));
       if(snap.exists()){
         const data = snap.data();
-        if(data && typeof data.weight === 'number' && data.weight > 0) return data.weight;
+        if(data && typeof data.weight === 'number' && data.weight > 0){
+          _recentWeightCache = data.weight;
+          return _recentWeightCache;
+        }
       }
     }catch(e){ /* ignore single-day fetch errors */ }
   }
+  _recentWeightCache = null;
   return null;
 }
 
@@ -1299,6 +1313,7 @@ window.goPage = function(name, btn){
 };
 
 function renderSettings(){
+  _recentWeightCache = undefined; // re-fetch on each visit
   renderTemplatesUI();
   renderTdeeUI();
 }
