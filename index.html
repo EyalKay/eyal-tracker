@@ -821,15 +821,15 @@ function setTdeeField(field, value){
   else if(field === 'age') tdeeProfile.age = Math.max(10, Math.min(100, parseInt(value)||0));
   else if(field === 'sex') tdeeProfile.sex = (value === 'F') ? 'F' : 'M';
   else if(field === 'activity') tdeeProfile.activity = value;
-  // Debounce saves on the typing fields; immediate save for sex/activity
   if(field === 'height' || field === 'age'){
     if(_tdeeSaveTimer) clearTimeout(_tdeeSaveTimer);
     _tdeeSaveTimer = setTimeout(() => { _tdeeSaveTimer = null; saveConfig(); }, 500);
+    refreshTdeeOut(); // only update the readout, preserve input focus
   } else {
     if(_tdeeSaveTimer){ clearTimeout(_tdeeSaveTimer); _tdeeSaveTimer = null; }
     saveConfig();
+    renderTdeeUI(); // sex/activity changes can rebuild — buttons/select don't lose focus on click
   }
-  renderTdeeUI();
 }
 window.setTdeeField = setTdeeField;
 
@@ -903,14 +903,18 @@ async function renderTdeeUI(){
       <div class="tdee-out" id="tdeeOut"><div class="err">Loading…</div></div>
     </div>
   `;
-  // Async fill of readout
-  const weight = await mostRecentWeight();
+  refreshTdeeOut();
+}
+
+async function refreshTdeeOut(){
   const out = document.getElementById('tdeeOut');
-  if(!out) return; // user navigated away
+  if(!out) return; // not visible
   if(!tdeeProfile || !tdeeProfile.height || !tdeeProfile.age){
     out.innerHTML = '<div class="err">Enter height and age to see your TDEE.</div>';
     return;
   }
+  const weight = await mostRecentWeight();
+  if(!document.getElementById('tdeeOut')) return; // navigated away
   if(!weight){
     out.innerHTML = '<div class="err">Log a weight on Today first to see your TDEE.</div>';
     return;
