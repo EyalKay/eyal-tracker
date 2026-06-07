@@ -125,6 +125,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .stat-tile{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
 .stat-val{font-size:32px;font-weight:900;line-height:1;margin-bottom:4px}
 .stat-lbl{font-size:11px;color:var(--muted)}
+.all-time-card{background:linear-gradient(135deg,var(--card) 0%,var(--card2) 100%);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px}
+.all-time-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.all-time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
+.all-time-grid .at-val{font-size:20px;font-weight:900;line-height:1}
+.all-time-grid .at-lbl{font-size:10px;color:var(--muted);margin-top:4px}
 .range-toggle{display:flex;gap:6px;margin:0 0 12px}
 .range-toggle button{flex:1;background:var(--card2);border:1px solid var(--border);color:var(--muted);padding:8px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}
 .range-toggle button.active{background:var(--p);border-color:var(--p);color:#000}
@@ -501,6 +506,15 @@ body.auth-locked .bottom-nav,body.auth-locked .page{display:none !important}
     </div>
   </div>
 
+  <div class="all-time-card">
+    <div class="all-time-title">🏁 All time</div>
+    <div class="all-time-grid">
+      <div><div class="at-val" id="atDays" style="color:var(--p)">—</div><div class="at-lbl">Days logged</div></div>
+      <div><div class="at-val" id="atDelta" style="color:var(--c)">—</div><div class="at-lbl">Weight Δ (kg)</div></div>
+      <div><div class="at-val" id="atStreak" style="color:var(--f)">—</div><div class="at-lbl">Best streak</div></div>
+    </div>
+  </div>
+
   <div class="range-toggle" id="statsRangeToggle">
     <button class="active" data-range="30" onclick="setStatsRange(30)">30d</button>
     <button data-range="90" onclick="setStatsRange(90)">90d</button>
@@ -667,6 +681,7 @@ async function saveToday(){
     await setDoc(doc(db, USER, dateKey(selectedDate)), todayData);
     setSyncState('synced');
     _recentWeightCache = undefined; // weight may have changed
+    allTimeCache = null;
   }catch(e){
     setSyncState('');
   }
@@ -1296,6 +1311,7 @@ window.resetAll = async function(){
     startingWeight = 87;
     mealTemplates = [];
     tdeeProfile = null;
+    allTimeCache = null;
     await saveConfig();
     todayData = {p:0,c:0,f:0,weight:null,triggers:{},habits:{},note:''};
     document.getElementById('weightIn').value='';
@@ -1467,8 +1483,42 @@ async function renderWeek(){
 
 // ── STATS ──
 let statsRange = 30; // 30 | 90 | 'all'
+let allTimeCache = null; // {days, delta, bestStreak}
+
+async function renderAllTime(){
+  // Cache once per session, invalidated by saveToday/full-reset
+  if(!allTimeCache){
+    const data = await loadAllRange('all');
+    const entries = Object.entries(data).sort((a,b)=> a[0]>b[0]?1:-1);
+    let days = 0, firstW = null, lastW = null, bestStreak = 0, curStreak = 0;
+    entries.forEach(([_, e])=>{
+      if(!e) return;
+      days++;
+      if(typeof e.weight === 'number' && e.weight > 0){
+        if(firstW === null) firstW = e.weight;
+        lastW = e.weight;
+      }
+      if(isSuccess(e)){ curStreak++; bestStreak = Math.max(bestStreak, curStreak); }
+      else curStreak = 0;
+    });
+    const delta = (firstW != null && lastW != null) ? (lastW - firstW) : null;
+    allTimeCache = { days, delta, bestStreak };
+  }
+  const { days, delta, bestStreak } = allTimeCache;
+  document.getElementById('atDays').textContent = days;
+  const atDelta = document.getElementById('atDelta');
+  if(delta == null){
+    atDelta.textContent = '—';
+    atDelta.style.color = 'var(--c)';
+  } else {
+    atDelta.textContent = (delta > 0 ? '+' : '') + delta.toFixed(1);
+    atDelta.style.color = delta <= 0 ? 'var(--p)' : 'var(--red)';
+  }
+  document.getElementById('atStreak').textContent = bestStreak;
+}
 
 async function renderStats(){
+  renderAllTime(); // fire-and-forget; updates DOM when ready
   const range = statsRange;
   const data = await loadAllRange(range);
   const entries=Object.entries(data).sort((a,b)=>a[0]>b[0]?1:-1);
