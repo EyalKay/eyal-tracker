@@ -231,6 +231,19 @@ body.auth-locked .bottom-nav,body.auth-locked .page{display:none !important}
 .tpl-chip .tpl-chip-macro{font-size:10px;color:var(--muted);font-weight:500;margin-left:4px}
 .tpl-chip-empty{color:var(--muted);font-size:12px;padding:8px 4px;cursor:pointer}
 .tpl-chip-empty:hover{color:var(--text)}
+.tdee-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
+.tdee-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.tdee-field{display:flex;flex-direction:column;gap:4px}
+.tdee-field label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.tdee-field input,.tdee-field select{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-family:inherit;font-size:14px}
+.tdee-sex{display:flex;gap:6px}
+.tdee-sex button{flex:1;background:var(--card2);border:1px solid var(--border);color:var(--muted);padding:8px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.tdee-sex button.active{background:var(--p);border-color:var(--p);color:#000}
+.tdee-out{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;line-height:1.6}
+.tdee-out .row{display:flex;justify-content:space-between}
+.tdee-out .row.big{font-size:15px;font-weight:700;margin-top:6px}
+.tdee-out .warn{margin-top:8px;color:var(--f);font-size:11px}
+.tdee-out .err{color:var(--muted);font-style:italic}
 </style>
 </head>
 <body>
@@ -763,6 +776,127 @@ function renderTemplatesUI(){
   `;
 }
 
+// ── TDEE ──
+const ACTIVITY_MULT = {
+  sedentary: 1.2,
+  light:     1.375,
+  moderate:  1.55,
+  active:    1.725,
+  very:      1.9
+};
+
+function ensureTdee(){
+  if(!tdeeProfile) tdeeProfile = { height:175, age:35, sex:'M', activity:'moderate' };
+}
+
+function setTdeeField(field, value){
+  ensureTdee();
+  if(field === 'height') tdeeProfile.height = Math.max(100, Math.min(250, parseInt(value)||0));
+  else if(field === 'age') tdeeProfile.age = Math.max(10, Math.min(100, parseInt(value)||0));
+  else if(field === 'sex') tdeeProfile.sex = (value === 'F') ? 'F' : 'M';
+  else if(field === 'activity') tdeeProfile.activity = value;
+  saveConfig();
+  renderTdeeUI();
+}
+window.setTdeeField = setTdeeField;
+
+async function mostRecentWeight(){
+  // Walk back up to 60 days from today looking for the latest logged weight
+  for(let i=0; i<60; i++){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const key = dateKey(d);
+    try{
+      const snap = await getDoc(doc(db, USER, key));
+      if(snap.exists()){
+        const data = snap.data();
+        if(data && typeof data.weight === 'number' && data.weight > 0) return data.weight;
+      }
+    }catch(e){ /* ignore single-day fetch errors */ }
+  }
+  return null;
+}
+
+function computeTdee(weight){
+  if(!tdeeProfile || !weight) return null;
+  const { height, age, sex, activity } = tdeeProfile;
+  if(!height || !age) return null;
+  const bmr = (sex === 'F')
+    ? 10*weight + 6.25*height - 5*age - 161
+    : 10*weight + 6.25*height - 5*age + 5;
+  const mult = ACTIVITY_MULT[activity] || ACTIVITY_MULT.moderate;
+  const tdee = bmr * mult;
+  return { bmr: Math.round(bmr), tdee: Math.round(tdee) };
+}
+
+async function renderTdeeUI(){
+  const root = document.getElementById('settingsTdeeSection');
+  if(!root) return;
+  const p = tdeeProfile || { height:'', age:'', sex:'M', activity:'moderate' };
+  root.innerHTML = `
+    <div class="settings-section-title">📊 TDEE & Goal Check</div>
+    <div class="tdee-card">
+      <div class="tdee-inputs">
+        <div class="tdee-field">
+          <label>Height (cm)</label>
+          <input type="number" min="100" max="250" value="${p.height||''}" oninput="setTdeeField('height', this.value)">
+        </div>
+        <div class="tdee-field">
+          <label>Age</label>
+          <input type="number" min="10" max="100" value="${p.age||''}" oninput="setTdeeField('age', this.value)">
+        </div>
+        <div class="tdee-field" style="grid-column:1 / span 2">
+          <label>Sex</label>
+          <div class="tdee-sex">
+            <button class="${p.sex==='M'?'active':''}" onclick="setTdeeField('sex','M')">Male</button>
+            <button class="${p.sex==='F'?'active':''}" onclick="setTdeeField('sex','F')">Female</button>
+          </div>
+        </div>
+        <div class="tdee-field" style="grid-column:1 / span 2">
+          <label>Activity level</label>
+          <select onchange="setTdeeField('activity', this.value)">
+            <option value="sedentary" ${p.activity==='sedentary'?'selected':''}>Sedentary (desk job)</option>
+            <option value="light"     ${p.activity==='light'?'selected':''}>Light (1–3 days/wk)</option>
+            <option value="moderate"  ${p.activity==='moderate'?'selected':''}>Moderate (3–5 days/wk)</option>
+            <option value="active"    ${p.activity==='active'?'selected':''}>Active (6–7 days/wk)</option>
+            <option value="very"      ${p.activity==='very'?'selected':''}>Very active (2x/day)</option>
+          </select>
+        </div>
+      </div>
+      <div class="tdee-out" id="tdeeOut"><div class="err">Loading…</div></div>
+    </div>
+  `;
+  // Async fill of readout
+  const weight = await mostRecentWeight();
+  const out = document.getElementById('tdeeOut');
+  if(!out) return; // user navigated away
+  if(!tdeeProfile || !tdeeProfile.height || !tdeeProfile.age){
+    out.innerHTML = '<div class="err">Enter height and age to see your TDEE.</div>';
+    return;
+  }
+  if(!weight){
+    out.innerHTML = '<div class="err">Log a weight on Today first to see your TDEE.</div>';
+    return;
+  }
+  const r = computeTdee(weight);
+  if(!r){ out.innerHTML = '<div class="err">Invalid inputs.</div>'; return; }
+  const deficit = r.tdee - TARGET_CAL;
+  const isDeficit = deficit >= 0;
+  const kgPerWeek = (Math.abs(deficit) * 7) / 7700;
+  const sign = isDeficit ? '−' : '+';
+  const label = isDeficit ? 'Deficit' : 'Surplus';
+  const projColor = isDeficit ? 'var(--p)' : 'var(--red)';
+  const warn = isDeficit && deficit > 1000
+    ? `<div class="warn">⚠ Deficit > 1000 kcal/day is aggressive — consider reviewing with your dietitian.</div>` : '';
+  out.innerHTML = `
+    <div class="row"><span>BMR</span><span>${r.bmr} kcal</span></div>
+    <div class="row"><span>TDEE</span><span>${r.tdee} kcal</span></div>
+    <div class="row"><span>Target (1960)</span><span>${TARGET_CAL} kcal</span></div>
+    <div class="row big"><span>${label}</span><span style="color:${projColor}">${sign}${Math.abs(deficit)} kcal/day</span></div>
+    <div class="row" style="margin-top:4px"><span>Projected</span><span style="color:${projColor}">${sign}${kgPerWeek.toFixed(2)} kg/week</span></div>
+    ${warn}
+  `;
+}
+
 // ── RENDER TODAY ──
 function formatVal(v){
   return v % 1 === 0 ? v.toString() : v.toFixed(1);
@@ -1165,9 +1299,8 @@ window.goPage = function(name, btn){
 };
 
 function renderSettings(){
-  // Populated by Task 3 (templates) and Task 5 (TDEE)
-  if(typeof renderTemplatesUI === 'function') renderTemplatesUI();
-  if(typeof renderTdeeUI === 'function') renderTdeeUI();
+  renderTemplatesUI();
+  renderTdeeUI();
 }
 
 // ── LOAD ALL DAYS ──
