@@ -358,6 +358,13 @@ body.auth-locked .bottom-nav,body.auth-locked .page{display:none !important}
         <button class="trig-btn" onclick="setTrig('kitchen',false)" id="tk-n">✗</button>
       </div>
     </div>
+    <div class="trigger-row">
+      <div class="trigger-label">🍎 Planned snack eaten? (150 cal)</div>
+      <div class="trig-btns">
+        <button class="trig-btn" onclick="setSnack(true)" id="sn-y">✓</button>
+        <button class="trig-btn" onclick="setSnack(false)" id="sn-n">✗</button>
+      </div>
+    </div>
   </div>
 
   <!-- HABITS -->
@@ -618,6 +625,14 @@ const ALLOWED_EMAIL = "eyalkay@gmail.com";
 const TARGETS = {p:5, c:3, f:2};
 const CAL = {p:220, c:190, f:145};
 const TARGET_CAL = TARGETS.p*CAL.p + TARGETS.c*CAL.c + TARGETS.f*CAL.f; // 1960
+// extra (non-macro) calories: coffee 50 ea, Aroma big oat-milk coffee 180 ea, planned snack 150
+const EXTRA_CAL = {coffee:50, aroma:180, snack:150};
+function extraCalForEntry(e){
+  if(!e) return 0;
+  const h = e.habits||{};
+  return (h.coffee||0)*EXTRA_CAL.coffee + (h.aroma||0)*EXTRA_CAL.aroma + (e.snack?EXTRA_CAL.snack:0);
+}
+function coffeeTotal(){ const h=todayData.habits||{}; return (h.coffee||0)+(h.aroma||0); }
 const USER = 'eyal';
 const EN_DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const EN_DAYS_SHORT = ['S','M','T','W','T','F','S'];
@@ -965,12 +980,10 @@ function renderToday(){
     document.getElementById('tile-'+m).classList.toggle('done', v>=t);
   });
 
-  // coffee penalty: +0.5 carb per coffee over 2
-  const coffeeVal = todayData.habits?.coffee||0;
-  const coffeePenalty = Math.max(0, coffeeVal - 2) * 0.5;
-  const effectiveC = (todayData.c||0) + coffeePenalty;
-  const cal = (todayData.p||0)*CAL.p + effectiveC*CAL.c + (todayData.f||0)*CAL.f;
-  const done = (todayData.p||0)>=TARGETS.p && effectiveC>=TARGETS.c && (todayData.f||0)>=TARGETS.f;
+  // calories = macros + extras (coffee, Aroma, planned snack)
+  const macroCal = (todayData.p||0)*CAL.p + (todayData.c||0)*CAL.c + (todayData.f||0)*CAL.f;
+  const cal = macroCal + extraCalForEntry(todayData);
+  const done = (todayData.p||0)>=TARGETS.p && (todayData.c||0)>=TARGETS.c && (todayData.f||0)>=TARGETS.f;
   const over = cal > TARGET_CAL;
   const total = (todayData.p||0)+(todayData.c||0)+(todayData.f||0);
 
@@ -978,7 +991,13 @@ function renderToday(){
   const icon = document.getElementById('statusIcon');
   const txt = document.getElementById('statusText');
   bar.className = 'status-bar';
-  const penaltyNote = coffeePenalty ? ` (+${coffeePenalty}C ☕)` : '';
+  const coffeeN = todayData.habits?.coffee||0;
+  const aromaN = todayData.habits?.aroma||0;
+  const extraParts = [];
+  if(coffeeN) extraParts.push(`+${coffeeN}☕`);
+  if(aromaN) extraParts.push(`+${aromaN}🥤`);
+  if(todayData.snack) extraParts.push('+🍎');
+  const penaltyNote = extraParts.length ? ` (${extraParts.join(' ')})` : '';
   if(!total){ bar.classList.add('empty'); icon.textContent='📋'; txt.textContent='Start logging meals'; }
   else if(over){ bar.classList.add('over'); icon.textContent='⚠️'; txt.textContent=`Over target — ${cal} cal${penaltyNote}`; }
   else if(done){ bar.classList.add('ok'); icon.textContent='✅'; txt.textContent=`Target reached! ~${cal} cal${penaltyNote}`; }
@@ -999,17 +1018,28 @@ function renderToday(){
     document.getElementById(px+'-n').className = 'trig-btn' + (v===false?' no':'');
   });
 
+  // planned snack toggle
+  const sn = todayData.snack;
+  document.getElementById('sn-y').className = 'trig-btn' + (sn===true?' yes':'');
+  document.getElementById('sn-n').className = 'trig-btn' + (sn===false?' no':'');
+
   document.getElementById('noteInput').value = todayData.note || '';
 }
 
 // ── HABITS RENDER ──
 const DEFAULT_HABITS = [
   {id:'steps',emoji:'🚶',name:'Daily Steps',goal:8000,unit:'steps',type:'daily',mode:'min'},
-  {id:'workouts',emoji:'🏋️',name:'Workouts',goal:3,unit:'/week',type:'weekly',mode:'min'}
+  {id:'workouts',emoji:'🏋️',name:'Workouts',goal:3,unit:'/week',type:'weekly',mode:'min'},
+  {id:'coffee',emoji:'☕',name:'Coffee',goal:2,unit:'(50 cal ea)',type:'daily',mode:'max'},
+  {id:'aroma',emoji:'🥤',name:'Aroma Coffee',goal:2,unit:'(180 cal ea)',type:'daily',mode:'max'}
 ];
 
 function getAllHabits(){
-  return [...DEFAULT_HABITS, ...customHabits];
+  // drop any old custom habit that duplicates a default (e.g. a pre-existing "Coffee")
+  const defIds = DEFAULT_HABITS.map(d=>d.id);
+  const defNames = DEFAULT_HABITS.map(d=>d.name.toLowerCase());
+  const customs = customHabits.filter(h=>!defIds.includes(h.id) && !defNames.includes((h.name||'').toLowerCase()));
+  return [...DEFAULT_HABITS, ...customs];
 }
 
 function isHabitMet(h, v){
@@ -1029,7 +1059,6 @@ function habitCheckHtml(h, v){
 }
 
 const HABIT_SUGGESTIONS = [
-  {emoji:'☕',name:'Coffee',goal:2,mode:'max',unit:''},
   {emoji:'💧',name:'Water (glasses)',goal:8,mode:'min',unit:''},
   {emoji:'😴',name:'Sleep (hours)',goal:7,mode:'min',unit:'hrs'},
   {emoji:'📵',name:'Screen Time (hrs)',goal:3,mode:'max',unit:'hrs'},
@@ -1049,6 +1078,7 @@ function renderHabits(){
     const isCustom = !DEFAULT_HABITS.find(d=>d.id===h.id);
     const modeLabel = h.mode==='max'?'Max':'Min';
     const step = h.id==='steps'?1000:1;
+    const checkVal = (h.id==='coffee'||h.id==='aroma') ? ((vals.coffee||0)+(vals.aroma||0)) : v;
     const delBtn = isCustom?`<button class="habit-del" onclick="removeHabit('${h.id}')">✕</button>`:'';
     html+=`<div class="habit-row">
       <div class="habit-emoji">${h.emoji}</div>
@@ -1061,7 +1091,7 @@ function renderHabits(){
         <input class="habit-val" type="number" value="${v||''}" placeholder="0"
           oninput="setHabit('${h.id}',this.value)">
         <button class="habit-pm" ontouchstart="" onclick="chgHabit('${h.id}',${step})">+</button>
-        ${habitCheckHtml(h, v)}
+        ${habitCheckHtml(h, checkVal)}
         ${delBtn}
       </div>
     </div>`;
@@ -1207,6 +1237,12 @@ window.setTrig = function(t, val){
   saveToday();
 };
 
+window.setSnack = function(val){
+  todayData.snack = val;
+  renderToday();
+  saveToday();
+};
+
 window.setHabit = function(id, val){
   if(!todayData.habits) todayData.habits={};
   const n = parseFloat(val)||0;
@@ -1216,12 +1252,14 @@ window.setHabit = function(id, val){
   const all = getAllHabits();
   const h = all.find(x=>x.id===id);
   if(h){
+    const checkVal = (id==='coffee'||id==='aroma') ? coffeeTotal() : n;
     const row = document.querySelector(`input[oninput*="'${id}'"]`);
     if(row){
       const check = row.parentElement.querySelector('.habit-check');
-      if(check) check.outerHTML = habitCheckHtml(h, n);
+      if(check) check.outerHTML = habitCheckHtml(h, checkVal);
     }
   }
+  if(id==='coffee'||id==='aroma') renderToday(); // refresh calorie total + sibling coffee check
 };
 
 window.saveNote = function(){
@@ -1254,6 +1292,7 @@ window.chgHabit = function(id, d){
   const n = Math.max(0, cur+d);
   todayData.habits[id] = n;
   renderHabits();
+  if(id==='coffee'||id==='aroma') renderToday(); // refresh calorie total
   saveToday();
 };
 
@@ -1416,7 +1455,7 @@ async function renderWeek(){
 
   let totalCal=0,calDays=0;
   Object.values(db_data).forEach(e=>{
-    if(e){ const c=(e.p||0)*CAL.p+(e.c||0)*CAL.c+(e.f||0)*CAL.f; if(c>0){totalCal+=c;calDays++;} }
+    if(e){ const c=(e.p||0)*CAL.p+(e.c||0)*CAL.c+(e.f||0)*CAL.f+extraCalForEntry(e); if(c>0){totalCal+=c;calDays++;} }
   });
   document.getElementById('wAvgCal').textContent=calDays?Math.round(totalCal/calDays):0;
 
